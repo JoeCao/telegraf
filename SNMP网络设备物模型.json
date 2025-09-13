@@ -1,0 +1,310 @@
+{
+  "actions": [
+    {
+      "desc": "重启网络设备",
+      "identifier": "restart_device",
+      "input_data": [],
+      "name": "重启设备",
+      "output_data": [
+        {
+          "data_type": {
+            "specs": {},
+            "type": "bool"
+          },
+          "desc": "重启操作是否成功",
+          "identifier": "result",
+          "name": "结果"
+        },
+        {
+          "data_type": {
+            "specs": {
+              "length": 256
+            }
+          },
+          "desc": "操作返回的附加信息",
+          "identifier": "message",
+          "name": "附加信息"
+        }
+      ]
+    },
+    {
+      "desc": "刷新接口统计信息",
+      "identifier": "refresh_interface_stats",
+      "input_data": [],
+      "name": "刷新接口统计",
+      "output_data": [
+        {
+          "data_type": {
+            "specs": {},
+            "type": "bool"
+          },
+          "desc": "刷新操作是否成功",
+          "identifier": "result",
+          "name": "结果"
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "desc": "接口状态异常告警",
+      "event_type": "EVENT_TYPE_ALERT",
+      "identifier": "interface_down_alarm",
+      "name": "接口下线告警",
+      "output_data": [
+        {
+          "data_type": {
+            "specs": {
+              "length": 64
+            }
+          },
+          "desc": "异常接口名称",
+          "identifier": "interface_name",
+          "name": "接口名称"
+        },
+        {
+          "data_type": {
+            "specs": {
+              "length": 128
+            }
+          },
+          "desc": "告警详细信息",
+          "identifier": "alarm_message",
+          "name": "告警信息"
+        }
+      ]
+    },
+    {
+      "desc": "接口错误率过高告警",
+      "event_type": "EVENT_TYPE_ALERT",
+      "identifier": "high_error_rate_alarm",
+      "name": "高错误率告警",
+      "output_data": [
+        {
+          "data_type": {
+            "specs": {
+              "length": 64
+            }
+          },
+          "desc": "异常接口名称",
+          "identifier": "interface_name",
+          "name": "接口名称"
+        },
+        {
+          "data_type": {
+            "specs": {
+              "max": 100.0,
+              "min": 0.0,
+              "unit": "%"
+            },
+            "type": "float"
+          },
+          "desc": "当前错误率",
+          "identifier": "error_rate",
+          "name": "错误率"
+        }
+      ]
+    }
+  ],
+  "properties": [
+    {
+      "data_type": {
+        "specs": {
+          "length": 128
+        }
+      },
+      "desc": "设备系统描述信息",
+      "identifier": "system_description",
+      "name": "系统描述"
+    },
+    {
+      "data_type": {
+        "specs": {
+          "length": 64
+        }
+      },
+      "desc": "设备系统名称",
+      "identifier": "system_name",
+      "name": "系统名称"
+    },
+    {
+      "data_type": {
+        "specs": {
+          "max": 3.1536E7,
+          "min": 0.0,
+          "unit": "s"
+        },
+        "type": "int64"
+      },
+      "desc": "设备已运行的时间",
+      "identifier": "system_uptime",
+      "name": "系统运行时间"
+    },
+    {
+      "data_type": {
+        "specs": {
+          "max": 255,
+          "min": 1,
+          "unit": "个"
+        },
+        "type": "int32"
+      },
+      "desc": "设备网络接口总数",
+      "identifier": "interface_count",
+      "name": "接口总数"
+    },
+    {
+      "data_type": {
+        "specs": {
+          "max": 10000.0,
+          "min": 0.0,
+          "unit": "Mbps"
+        },
+        "type": "double"
+      },
+      "desc": "所有接口入流量总和的实时速率",
+      "identifier": "total_inbound_rate",
+      "name": "总入流量速率"
+    },
+    {
+      "data_type": {
+        "specs": {
+          "max": 10000.0,
+          "min": 0.0,
+          "unit": "Mbps"
+        },
+        "type": "double"
+      },
+      "desc": "所有接口出流量总和的实时速率",
+      "identifier": "total_outbound_rate",
+      "name": "总出流量速率"
+    },
+    {
+      "data_type": {
+        "specs": {
+          "max": 1.0E15,
+          "min": 0.0,
+          "unit": "bytes"
+        },
+        "type": "int64"
+      },
+      "desc": "所有接口入流量累积字节数",
+      "identifier": "total_inbound_bytes",
+      "name": "总入流量字节数"
+    },
+    {
+      "data_type": {
+        "specs": {
+          "max": 1.0E15,
+          "min": 0.0,
+          "unit": "bytes"
+        },
+        "type": "int64"
+      },
+      "desc": "所有接口出流量累积字节数",
+      "identifier": "total_outbound_bytes",
+      "name": "总出流量字节数"
+    },
+    {
+      "data_type": {
+        "specs": {
+          "max": 1.0E12,
+          "min": 0.0,
+          "unit": "packets"
+        },
+        "type": "int64"
+      },
+      "desc": "所有接口入包总数",
+      "identifier": "total_inbound_packets",
+      "name": "总入包数"
+    },
+    {
+      "data_type": {
+        "specs": {
+          "max": 1.0E12,
+          "min": 0.0,
+          "unit": "packets"
+        },
+        "type": "int64"
+      },
+      "desc": "所有接口出包总数",
+      "identifier": "total_outbound_packets",
+      "name": "总出包数"
+    },
+    {
+      "data_type": {
+        "specs": {
+          "max": 1.0E9,
+          "min": 0.0,
+          "unit": "errors"
+        },
+        "type": "int64"
+      },
+      "desc": "所有接口入错误包总数",
+      "identifier": "total_inbound_errors",
+      "name": "总入错误数"
+    },
+    {
+      "data_type": {
+        "specs": {
+          "max": 1.0E9,
+          "min": 0.0,
+          "unit": "errors"
+        },
+        "type": "int64"
+      },
+      "desc": "所有接口出错误包总数",
+      "identifier": "total_outbound_errors",
+      "name": "总出错误数"
+    },
+    {
+      "data_type": {
+        "specs": {
+          "max": 100.0,
+          "min": 0.0,
+          "unit": "%"
+        },
+        "type": "float"
+      },
+      "desc": "设备整体丢包率",
+      "identifier": "packet_loss_rate",
+      "name": "丢包率"
+    },
+    {
+      "data_type": {
+        "specs": {
+          "max": 255,
+          "min": 0,
+          "unit": "个"
+        },
+        "type": "int32"
+      },
+      "desc": "当前在线（UP状态）的接口数量",
+      "identifier": "active_interfaces",
+      "name": "在线接口数"
+    },
+    {
+      "data_type": {
+        "specs": {
+          "length": 1024
+        }
+      },
+      "desc": "每个接口的详细状态信息（JSON格式）",
+      "identifier": "interface_details",
+      "name": "接口详细信息"
+    },
+    {
+      "data_type": {
+        "specs": {
+          "max": 100.0,
+          "min": 0.0,
+          "unit": "%"
+        },
+        "type": "float"
+      },
+      "desc": "设备整体带宽使用率",
+      "identifier": "bandwidth_utilization",
+      "name": "带宽使用率"
+    }
+  ]
+}
