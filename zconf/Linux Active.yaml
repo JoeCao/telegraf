@@ -1,0 +1,1887 @@
+zabbix_export:
+  version: '6.0'
+  date: '2025-03-12T02:11:07Z'
+  groups:
+    -
+      uuid: 4acea20ba1254054930e725442fccd0f
+      name: Templates
+  templates:
+    -
+      uuid: 12bc99ac08ea4cc2a25bad039a66e912
+      template: 'Linux Active'
+      name: 'Linux Active'
+      groups:
+        -
+          name: Templates
+      items:
+        -
+          uuid: 41f6b40904a44c8ca9d3f49ae2086708
+          name: 'OS: Agent Ping'
+          type: ZABBIX_ACTIVE
+          key: agent.ping
+          history: 7d
+          description: 'The agent always returns 1 for this item. It could be used in combination with nodata() for availability check.'
+          valuemap:
+            name: state
+          tags:
+            -
+              tag: component
+              value: system
+        -
+          uuid: fd3d0b34f6bc4c769ad15f31fcec1ae6
+          name: 'OS: ICMP Ping'
+          type: SIMPLE
+          key: icmpping
+          history: 7d
+          valuemap:
+            name: state
+          tags:
+            -
+              tag: component
+              value: health
+            -
+              tag: component
+              value: network
+          triggers:
+            -
+              uuid: 8e5bb5dd04a74f3296199722462c2cf1
+              expression: 'max(/Linux Active/icmpping,#3)=0'
+              name: 'OS: ICMP Ping 不通'
+              priority: DISASTER
+              description: 'Last three attempts returned timeout.  Please check device connectivity.'
+              tags:
+                -
+                  tag: scope
+                  value: availability
+        -
+          uuid: 25580fbe5b2e4969a0be624bbbcc05c4
+          name: 'OS: ICMP Ping 丢包率'
+          type: SIMPLE
+          key: icmppingloss
+          history: 7d
+          value_type: FLOAT
+          units: '%'
+          tags:
+            -
+              tag: component
+              value: health
+            -
+              tag: component
+              value: network
+          triggers:
+            -
+              uuid: 65de61e615cb4ab6a4d3b91010a1c0be
+              expression: 'min(/Linux Active/icmppingloss,5m)>{$ICMP.LOSS.WARN} and min(/Linux Active/icmppingloss,5m)<100'
+              name: 'OS: ICMP Ping 丢包率持续 5 分钟大于 {$ICMP.LOSS.WARN}%'
+              priority: AVERAGE
+              dependencies:
+                -
+                  name: 'OS: ICMP Ping 不通'
+                  expression: 'max(/Linux Active/icmpping,#3)=0'
+              tags:
+                -
+                  tag: scope
+                  value: availability
+                -
+                  tag: scope
+                  value: performance
+        -
+          uuid: 4963174c9f42414b88447d1f4faa11a9
+          name: 'OS: ICMP Ping 延迟'
+          type: SIMPLE
+          key: icmppingsec
+          history: 7d
+          value_type: FLOAT
+          units: s
+          tags:
+            -
+              tag: component
+              value: health
+            -
+              tag: component
+              value: network
+          triggers:
+            -
+              uuid: a12214e4024e4bcf8d1c5e75358f6c15
+              expression: 'avg(/Linux Active/icmppingsec,5m)>{$ICMP.RESPONSE_TIME.WARN}'
+              name: 'OS: ICMP Ping 5 分钟平均延迟大于 {$ICMP.RESPONSE_TIME.WARN} 秒'
+              priority: AVERAGE
+              dependencies:
+                -
+                  name: 'OS: ICMP Ping 不通'
+                  expression: 'max(/Linux Active/icmpping,#3)=0'
+                -
+                  name: 'OS: ICMP Ping 丢包率持续 5 分钟大于 {$ICMP.LOSS.WARN}%'
+                  expression: 'min(/Linux Active/icmppingloss,5m)>{$ICMP.LOSS.WARN} and min(/Linux Active/icmppingloss,5m)<100'
+              tags:
+                -
+                  tag: scope
+                  value: availability
+                -
+                  tag: scope
+                  value: performance
+        -
+          uuid: b4bd2cd6d7fa486b8b41a45516c9c735
+          name: 'OS: 最大文件打开数'
+          type: ZABBIX_ACTIVE
+          key: kernel.maxfiles
+          history: 7d
+          description: 'It could be increased by using sysctl utility or modifying file /etc/sysctl.conf.'
+          preprocessing:
+            -
+              type: DISCARD_UNCHANGED_HEARTBEAT
+              parameters:
+                - 1h
+          tags:
+            -
+              tag: component
+              value: system
+          triggers:
+            -
+              uuid: 74cdffce3df74cd398e474bcdafbc884
+              expression: 'last(/Linux Active/kernel.maxfiles)<256'
+              name: 'OS: 最大文件打开数低'
+              priority: INFO
+              tags:
+                -
+                  tag: scope
+                  value: performance
+        -
+          uuid: 00d1917f50984190a751a1affc262aa4
+          name: 'OS: 最大进程数'
+          type: ZABBIX_ACTIVE
+          key: kernel.maxproc
+          history: 7d
+          description: 'It could be increased by using sysctl utility or modifying file /etc/sysctl.conf.'
+          preprocessing:
+            -
+              type: DISCARD_UNCHANGED_HEARTBEAT
+              parameters:
+                - 1h
+          tags:
+            -
+              tag: component
+              value: system
+          triggers:
+            -
+              uuid: a8a418a25e8345b595f48ff60c3c72ce
+              expression: 'last(/Linux Active/kernel.maxproc)<1024'
+              name: 'OS: 最大进程数低'
+              priority: INFO
+              tags:
+                -
+                  tag: scope
+                  value: performance
+        -
+          uuid: 2d978a408bb94279b1c60be19e933bee
+          name: 获取端口信息
+          type: ZABBIX_ACTIVE
+          key: net.tcp.listen.info
+          history: 7d
+          trends: '0'
+          value_type: TEXT
+          tags:
+            -
+              tag: component
+              value: system
+        -
+          uuid: 8eaeab047cab4a46bc797ce0c2dfe4cb
+          name: 'OS: TCP close'
+          type: ZABBIX_ACTIVE
+          key: 'net.tcp.socket.count[,,,,close]'
+          history: 7d
+          tags:
+            -
+              tag: component
+              value: tcp
+        -
+          uuid: dd64e8e30b0e42f684060d10e70287c7
+          name: 'OS: TCP close_wait'
+          type: ZABBIX_ACTIVE
+          key: 'net.tcp.socket.count[,,,,close_wait]'
+          history: 7d
+          tags:
+            -
+              tag: component
+              value: tcp
+        -
+          uuid: a2cac9bcc44e4463877b2cd15a62c7a7
+          name: 'OS: TCP closing'
+          type: ZABBIX_ACTIVE
+          key: 'net.tcp.socket.count[,,,,closing]'
+          history: 7d
+          tags:
+            -
+              tag: component
+              value: tcp
+        -
+          uuid: 21e28cfe97e84c94bdf4b4de18939840
+          name: 'OS: TCP established'
+          type: ZABBIX_ACTIVE
+          key: 'net.tcp.socket.count[,,,,established]'
+          history: 7d
+          tags:
+            -
+              tag: component
+              value: tcp
+        -
+          uuid: 2fea502f4faf4e9ea8c7e6676fa9c884
+          name: 'OS: TCP fin_wait1'
+          type: ZABBIX_ACTIVE
+          key: 'net.tcp.socket.count[,,,,fin_wait1]'
+          history: 7d
+          tags:
+            -
+              tag: component
+              value: tcp
+        -
+          uuid: f7ae1fc1b3d644d18d630011fe2ee0e2
+          name: 'OS: TCP fin_wait2'
+          type: ZABBIX_ACTIVE
+          key: 'net.tcp.socket.count[,,,,fin_wait2]'
+          history: 7d
+          tags:
+            -
+              tag: component
+              value: tcp
+        -
+          uuid: 0e3fcc7148ed415292c2610e82efb7d2
+          name: 'OS: TCP last_ack'
+          type: ZABBIX_ACTIVE
+          key: 'net.tcp.socket.count[,,,,last_ack]'
+          history: 7d
+          tags:
+            -
+              tag: component
+              value: tcp
+        -
+          uuid: 5cab243cd5124f15a67f6dfb1cdfe947
+          name: 'OS: TCP listen'
+          type: ZABBIX_ACTIVE
+          key: 'net.tcp.socket.count[,,,,listen]'
+          history: 7d
+          tags:
+            -
+              tag: component
+              value: tcp
+        -
+          uuid: bc7d1008d80d4d9db94863b7e3b5d220
+          name: 'OS: TCP syn_recv'
+          type: ZABBIX_ACTIVE
+          key: 'net.tcp.socket.count[,,,,syn_recv]'
+          history: 7d
+          tags:
+            -
+              tag: component
+              value: tcp
+        -
+          uuid: 9dd297cf69ff446c9b5c0a334bdb4c02
+          name: 'OS: TCP syn_sent'
+          type: ZABBIX_ACTIVE
+          key: 'net.tcp.socket.count[,,,,syn_sent]'
+          history: 7d
+          tags:
+            -
+              tag: component
+              value: tcp
+        -
+          uuid: 466bfa25e72140d9a150e53e510f566d
+          name: 'OS: TCP time_wait'
+          type: ZABBIX_ACTIVE
+          key: 'net.tcp.socket.count[,,,,time_wait]'
+          history: 7d
+          tags:
+            -
+              tag: component
+              value: tcp
+        -
+          uuid: 9c04b1ea6f664b87ab8e4a55922e9d3b
+          name: 获取进程信息
+          type: ZABBIX_ACTIVE
+          key: proc.info
+          history: 7d
+          trends: '0'
+          value_type: TEXT
+          tags:
+            -
+              tag: component
+              value: system
+        -
+          uuid: 0d2abafaead344d89688934a5978686d
+          name: 'OS: 僵尸进程数'
+          type: ZABBIX_ACTIVE
+          key: 'proc.num[,,,zomb]'
+          history: 7d
+          tags:
+            -
+              tag: component
+              value: system
+          triggers:
+            -
+              uuid: 1d9e99ac6e8d4754baf101be861a5269
+              expression: 'last(/Linux Active/proc.num[,,,zomb])>0'
+              recovery_mode: RECOVERY_EXPRESSION
+              recovery_expression: 'last(/Linux Active/proc.num[,,,zomb])=0'
+              name: 'OS: 存在僵尸进程'
+              priority: WARNING
+        -
+          uuid: 600db3fac5bd4e5283151b29e350d98a
+          name: 'OS: 运行进程数'
+          type: ZABBIX_ACTIVE
+          key: 'proc.num[,,run]'
+          history: 7d
+          tags:
+            -
+              tag: component
+              value: system
+        -
+          uuid: 98971aa4fa2040bb99cb8f621d58cb96
+          name: 'OS: CPU 1 分钟平均负载'
+          type: ZABBIX_ACTIVE
+          key: 'system.cpu.load[all,avg1]'
+          history: 7d
+          value_type: FLOAT
+          tags:
+            -
+              tag: component
+              value: cpu
+        -
+          uuid: 3676275a92f44629a352dd1dc8c05de4
+          name: 'OS: CPU 5 分钟平均负载'
+          type: ZABBIX_ACTIVE
+          key: 'system.cpu.load[all,avg5]'
+          history: 7d
+          value_type: FLOAT
+          tags:
+            -
+              tag: component
+              value: cpu
+        -
+          uuid: fd1b64817b1f4bc999fede1fcd45959c
+          name: 'OS: CPU 15 分钟平均负载'
+          type: ZABBIX_ACTIVE
+          key: 'system.cpu.load[all,avg15]'
+          history: 7d
+          value_type: FLOAT
+          tags:
+            -
+              tag: component
+              value: cpu
+        -
+          uuid: 56e5427cd4f04bedabcedcc20277f348
+          name: 'OS: CPU 核数'
+          type: ZABBIX_ACTIVE
+          key: system.cpu.num
+          history: 7d
+          preprocessing:
+            -
+              type: DISCARD_UNCHANGED_HEARTBEAT
+              parameters:
+                - 1h
+          tags:
+            -
+              tag: component
+              value: cpu
+        -
+          uuid: cad588a97e164889b5ee5a8f782846ef
+          name: 'OS: CPU 使用率'
+          type: DEPENDENT
+          key: system.cpu.util
+          delay: '0'
+          history: 7d
+          value_type: FLOAT
+          units: '%'
+          preprocessing:
+            -
+              type: JAVASCRIPT
+              parameters:
+                - |
+                  //Calculate utilization
+                  return (100 - value)
+          master_item:
+            key: 'system.cpu.util[,idle]'
+          tags:
+            -
+              tag: component
+              value: cpu
+          triggers:
+            -
+              uuid: d1eefe41b57a409f8d0e83343dcb3b23
+              expression: 'min(/Linux Active/system.cpu.util,5m)>{$CPU.UTIL.CRIT}'
+              name: 'OS: CPU 使用率持续 5 分钟大于 {$CPU.UTIL.CRIT}%'
+              priority: AVERAGE
+              tags:
+                -
+                  tag: scope
+                  value: performance
+        -
+          uuid: c1dbfc1c0ed249dbb25cec7872a02e7a
+          name: 'CPU 空闲时间'
+          type: ZABBIX_ACTIVE
+          key: 'system.cpu.util[,idle]'
+          history: 7d
+          value_type: FLOAT
+          units: '%'
+        -
+          uuid: a505be93f42b46d8a340ddd48c9d1b89
+          name: 'OS: CPU 等待 IO 时间'
+          type: ZABBIX_ACTIVE
+          key: 'system.cpu.util[,iowait]'
+          history: 7d
+          value_type: FLOAT
+          units: '%'
+          description: 'Amount of time the CPU has been waiting for I/O to complete.'
+          tags:
+            -
+              tag: component
+              value: cpu
+        -
+          uuid: 4d4c4153365a4d82a836a04c22b289ec
+          name: 'OS: CPU 用户时间'
+          type: ZABBIX_ACTIVE
+          key: 'system.cpu.util[,user]'
+          history: 7d
+          value_type: FLOAT
+          units: '%'
+          description: 'The time the CPU has spent running users'' processes that are not niced.'
+          tags:
+            -
+              tag: component
+              value: cpu
+        -
+          uuid: 300e37b36cf6461785f38bfa10e86444
+          name: 'OS: 主机名'
+          type: ZABBIX_ACTIVE
+          key: system.hostname
+          history: 7d
+          trends: '0'
+          value_type: CHAR
+          description: 'System host name.'
+          preprocessing:
+            -
+              type: DISCARD_UNCHANGED_HEARTBEAT
+              parameters:
+                - 1h
+          tags:
+            -
+              tag: component
+              value: system
+          triggers:
+            -
+              uuid: 91a7a7cf4eb44fb88902203623348066
+              expression: 'last(/Linux Active/system.hostname,#1)<>last(/Linux Active/system.hostname,#2) and length(last(/Linux Active/system.hostname))>0'
+              name: 'OS: 主机名变更'
+              priority: INFO
+              description: 'System name has changed. Ack to close.'
+              tags:
+                -
+                  tag: scope
+                  value: notice
+                -
+                  tag: scope
+                  value: security
+        -
+          uuid: 4cffb1cb73914bd3b1634044c63cf3d9
+          name: 'OS: 型号'
+          type: ZABBIX_ACTIVE
+          key: 'system.hw.chassis[model]'
+          history: 7d
+          trends: '0'
+          value_type: CHAR
+          description: 'System host name.'
+          preprocessing:
+            -
+              type: DISCARD_UNCHANGED_HEARTBEAT
+              parameters:
+                - 1h
+          tags:
+            -
+              tag: component
+              value: system
+        -
+          uuid: 8f442538fe1745d9a306b0b24cc8de77
+          name: 'OS: SN'
+          type: ZABBIX_ACTIVE
+          key: 'system.hw.chassis[serial]'
+          history: 7d
+          trends: '0'
+          value_type: CHAR
+          description: 'System host name.'
+          preprocessing:
+            -
+              type: DISCARD_UNCHANGED_HEARTBEAT
+              parameters:
+                - 1h
+          tags:
+            -
+              tag: component
+              value: system
+        -
+          uuid: 7243e2534d2e46cea3100e6c06a47b57
+          name: 'OS: 制造商'
+          type: ZABBIX_ACTIVE
+          key: 'system.hw.chassis[vendor]'
+          history: 7d
+          trends: '0'
+          value_type: CHAR
+          description: 'System host name.'
+          preprocessing:
+            -
+              type: DISCARD_UNCHANGED_HEARTBEAT
+              parameters:
+                - 1h
+          tags:
+            -
+              tag: component
+              value: system
+        -
+          uuid: bce3da8f5ca346c9a73312c395db3103
+          name: 'OS: 系统时间'
+          type: ZABBIX_ACTIVE
+          key: system.localtime
+          history: 7d
+          units: unixtime
+          description: 'System local time of the host.'
+          tags:
+            -
+              tag: component
+              value: system
+          triggers:
+            -
+              uuid: 743ffbebfd4a450caaa3a01b4f0e7263
+              expression: 'fuzzytime(/Linux Active/system.localtime,60)=0'
+              name: 'OS: 系统时间不一致'
+              priority: WARNING
+              description: 'The host system time is different from the server time.'
+              tags:
+                -
+                  tag: scope
+                  value: availability
+                -
+                  tag: scope
+                  value: performance
+        -
+          uuid: f1228060f19a4cf4a0f84f6438683c2b
+          name: 'OS: 系统架构'
+          type: ZABBIX_ACTIVE
+          key: system.sw.arch
+          history: 7d
+          trends: '0'
+          value_type: CHAR
+          preprocessing:
+            -
+              type: DISCARD_UNCHANGED_HEARTBEAT
+              parameters:
+                - 1h
+          tags:
+            -
+              tag: component
+              value: system
+        -
+          uuid: 82ce7fec16da4c26aea00b73b835ac4c
+          name: 'OS: 系统版本'
+          type: ZABBIX_ACTIVE
+          key: 'system.sw.os[name]'
+          history: 7d
+          trends: '0'
+          value_type: CHAR
+          preprocessing:
+            -
+              type: DISCARD_UNCHANGED_HEARTBEAT
+              parameters:
+                - 1h
+          tags:
+            -
+              tag: component
+              value: system
+        -
+          uuid: bdc6b4af7ae9450ab21762546089b27b
+          name: 'OS: 可用交换分区大小'
+          type: ZABBIX_ACTIVE
+          key: 'system.swap.size[,free]'
+          history: 7d
+          units: B
+          description: 'The free space of swap volume/file in bytes.'
+          tags:
+            -
+              tag: component
+              value: memory
+            -
+              tag: component
+              value: storage
+        -
+          uuid: baf7fb8ba6f043c3a1a5a494e0cb4481
+          name: 'OS: 交换分区可用率'
+          type: ZABBIX_ACTIVE
+          key: 'system.swap.size[,pfree]'
+          history: 7d
+          value_type: FLOAT
+          units: '%'
+          description: 'The free space of swap volume/file in percent.'
+          tags:
+            -
+              tag: component
+              value: memory
+            -
+              tag: component
+              value: storage
+        -
+          uuid: e5371118904841c09eb77b5c326957e3
+          name: 'OS: 总交换分区大小'
+          type: ZABBIX_ACTIVE
+          key: 'system.swap.size[,total]'
+          history: 7d
+          units: B
+          description: 'The total space of swap volume/file in bytes.'
+          preprocessing:
+            -
+              type: DISCARD_UNCHANGED_HEARTBEAT
+              parameters:
+                - 1h
+          tags:
+            -
+              tag: component
+              value: memory
+            -
+              tag: component
+              value: storage
+        -
+          uuid: 6a0051ef074b4510a8235414ae222e68
+          name: 'OS: 系统描述'
+          type: ZABBIX_ACTIVE
+          key: system.uname
+          history: 7d
+          trends: '0'
+          value_type: CHAR
+          preprocessing:
+            -
+              type: DISCARD_UNCHANGED_HEARTBEAT
+              parameters:
+                - 1h
+          tags:
+            -
+              tag: component
+              value: system
+        -
+          uuid: 31fa528ac7334584952356747c5f1a0e
+          name: 'OS: 运行时长'
+          type: ZABBIX_ACTIVE
+          key: system.uptime
+          history: 7d
+          units: uptime
+          description: 'System uptime in ''N days, hh:mm:ss'' format.'
+          tags:
+            -
+              tag: component
+              value: system
+          triggers:
+            -
+              uuid: e4ba492092014c32a3aa534f3b4e65ad
+              expression: 'last(/Linux Active/system.uptime)<10m'
+              name: 'OS: 重启'
+              priority: WARNING
+              description: 'The host uptime is less than 10 minutes'
+              tags:
+                -
+                  tag: scope
+                  value: notice
+        -
+          uuid: a0e5600a78144f458f81d8b83b24f252
+          name: 'OS: 登录用户数'
+          type: ZABBIX_ACTIVE
+          key: system.users.num
+          history: 7d
+          description: 'Number of users who are currently logged in.'
+          tags:
+            -
+              tag: component
+              value: environment
+        -
+          uuid: 22ebe8b11adb4b11bc47e5ca8592fcd4
+          name: 'OS: 磁盘使用率'
+          type: CALCULATED
+          key: vfs.disk.util
+          history: 7d
+          value_type: FLOAT
+          units: '%'
+          params: 'sum(last_foreach(//vfs.fs.size[*,used]))/sum(last_foreach(//vfs.dev.size[*]))*100'
+          description: 'Available memory as percentage of total.'
+          tags:
+            -
+              tag: component
+              value: disk
+        -
+          uuid: c4e7c4c5046843aa999c9489f87e6aee
+          name: 'OS: /etc/passwd 检验和'
+          type: ZABBIX_ACTIVE
+          key: 'vfs.file.cksum[/etc/passwd,sha256]'
+          history: 7d
+          trends: '0'
+          value_type: CHAR
+          preprocessing:
+            -
+              type: DISCARD_UNCHANGED_HEARTBEAT
+              parameters:
+                - 1h
+          tags:
+            -
+              tag: component
+              value: security
+          triggers:
+            -
+              uuid: e8e5fa8ee4c04621a070a0c51bb106a1
+              expression: 'last(/Linux Active/vfs.file.cksum[/etc/passwd,sha256],#1)<>last(/Linux Active/vfs.file.cksum[/etc/passwd,sha256],#2)'
+              name: 'OS: /etc/passwd 变更'
+              priority: INFO
+              dependencies:
+                -
+                  name: 'OS: 主机名变更'
+                  expression: 'last(/Linux Active/system.hostname,#1)<>last(/Linux Active/system.hostname,#2) and length(last(/Linux Active/system.hostname))>0'
+              tags:
+                -
+                  tag: scope
+                  value: security
+        -
+          uuid: 339922ed67184602a91c74d42b7e5ccc
+          name: 获取挂载信息
+          type: ZABBIX_ACTIVE
+          key: 'vfs.file.contents[/proc/mounts]'
+          history: 7d
+          trends: '0'
+          value_type: TEXT
+          preprocessing:
+            -
+              type: JAVASCRIPT
+              parameters:
+                - |
+                  var pattern = /{$VFS.FS.FSTYPE.MATCHES}/,
+                      devs = [],
+                      data = [];
+                  
+                  value.split('\n').forEach(function (line) {
+                    var items = line.split(' ');
+                    if (items[2].search(pattern) !== -1) {
+                      if (devs.indexOf(items[0]) === -1) {
+                        devs.push(items[0]);
+                        data.push({'dev': items[0], 'name': items[1], 'type': items[2]});
+                      }
+                    }
+                  })
+                  
+                  return JSON.stringify(data);
+          tags:
+            -
+              tag: component
+              value: raw
+        -
+          uuid: 877244707e524620998082c0d973c86f
+          name: 获取分区信息
+          type: ZABBIX_ACTIVE
+          key: 'vfs.file.contents[/proc/partitions]'
+          history: 7d
+          trends: '0'
+          value_type: TEXT
+          preprocessing:
+            -
+              type: JAVASCRIPT
+              parameters:
+                - |
+                  var pattern = /{$VFS.DEV.DEVNAME.NOT_MATCHES}/,
+                      data = [];
+                  
+                  value.split('\n').slice(2).forEach(function (line) {
+                    var items = [];
+                    line.split(' ').forEach(function (item) {
+                      if (item !== '') {
+                        items.push(item);
+                      }
+                    });
+                    if (items[3].search(pattern) === -1) {
+                      data.push({'name': items[3], 'blocks': items[2]});
+                    }
+                  })
+                  
+                  return JSON.stringify(data);
+          tags:
+            -
+              tag: component
+              value: raw
+        -
+          uuid: d51027a0d2ce42d797a127bdc46d90ae
+          name: 'OS: 资产标签'
+          type: ZABBIX_ACTIVE
+          key: 'vfs.file.contents[/sys/class/dmi/id/chassis_asset_tag]'
+          history: 7d
+          trends: '0'
+          value_type: CHAR
+          description: 'System host name.'
+          preprocessing:
+            -
+              type: DISCARD_UNCHANGED_HEARTBEAT
+              parameters:
+                - 1h
+          tags:
+            -
+              tag: component
+              value: system
+        -
+          uuid: 3291e7bf63884fe18641579af334c375
+          name: 'OS: 可用内存大小'
+          type: ZABBIX_ACTIVE
+          key: 'vm.memory.size[available]'
+          history: 7d
+          units: B
+          description: 'Available memory, in Linux, available = free + buffers + cache. On other platforms calculation may vary.'
+          tags:
+            -
+              tag: component
+              value: memory
+        -
+          uuid: 9051bf2548a546349c65331ce6053ab8
+          name: 内存可用率
+          type: ZABBIX_ACTIVE
+          key: 'vm.memory.size[pavailable]'
+          history: 7d
+          value_type: FLOAT
+          units: '%'
+          description: 'Available memory as percentage of total.'
+          tags:
+            -
+              tag: component
+              value: memory
+        -
+          uuid: 8e23d93ee7e84373aa17dedaadd37904
+          name: 'OS: 总内存大小'
+          type: ZABBIX_ACTIVE
+          key: 'vm.memory.size[total]'
+          history: 7d
+          units: B
+          description: 'Total memory in Bytes.'
+          preprocessing:
+            -
+              type: DISCARD_UNCHANGED_HEARTBEAT
+              parameters:
+                - 1h
+          tags:
+            -
+              tag: component
+              value: memory
+        -
+          uuid: 24abfe14827f47b8929c0d96bde253ad
+          name: 'OS: 内存使用率'
+          type: CALCULATED
+          key: vm.memory.util
+          history: 7d
+          value_type: FLOAT
+          units: '%'
+          params: '100-last(//vm.memory.size[pavailable])'
+          description: 'Memory used percentage is calculated as (100-pavailable)'
+          tags:
+            -
+              tag: component
+              value: memory
+          triggers:
+            -
+              uuid: 23a2691c45dc46e3ab6904fb71061873
+              expression: 'min(/Linux Active/vm.memory.util,5m)>{$MEMORY.UTIL.CRIT}'
+              name: 'OS: 内存使用率持续 5 分钟大于 {$MEMORY.UTIL.CRIT}%'
+              priority: AVERAGE
+              description: 'The system is running out of free memory.'
+              tags:
+                -
+                  tag: scope
+                  value: capacity
+                -
+                  tag: scope
+                  value: performance
+        -
+          uuid: fa865b1f84d442a0a83da6a267b72470
+          name: 'OS: Agent 可用性'
+          type: INTERNAL
+          key: 'zabbix[host,agent,available]'
+          history: 7d
+          description: 'Monitoring the availability status of the agent.'
+          valuemap:
+            name: available
+          tags:
+            -
+              tag: component
+              value: system
+          triggers:
+            -
+              uuid: 483d6e24b51f494d91d9e4eb2cf49c2c
+              expression: 'max(/Linux Active/zabbix[host,agent,available],{$AGENT.TIMEOUT})=0'
+              name: 'OS: Agent 不可用'
+              priority: AVERAGE
+              description: 'For passive only agents, host availability is used with {$AGENT.TIMEOUT} as time threshold.'
+              tags:
+                -
+                  tag: scope
+                  value: availability
+      discovery_rules:
+        -
+          uuid: ac13059c60b54f9a910a3ee2c92797e2
+          name: 网卡自动发现
+          type: ZABBIX_ACTIVE
+          key: net.if.discovery
+          filter:
+            evaltype: AND
+            conditions:
+              -
+                macro: '{#IFNAME}'
+                value: '{$NET.IFNAME.MATCHES}'
+                formulaid: A
+              -
+                macro: '{#IFNAME}'
+                value: '{$NET.IFNAME.NOT_MATCHES}'
+                operator: NOT_MATCHES_REGEX
+                formulaid: B
+          lifetime: 3h
+          description: 'Discovery of network interfaces.'
+          item_prototypes:
+            -
+              uuid: a4a1491ef1af4220811821d383b2d6b9
+              name: 'OS: 网卡 {#IFNAME} 入流量'
+              type: ZABBIX_ACTIVE
+              key: 'net.if.in["{#IFNAME}"]'
+              history: 7d
+              units: bps
+              preprocessing:
+                -
+                  type: CHANGE_PER_SECOND
+                  parameters:
+                    - ''
+                -
+                  type: MULTIPLIER
+                  parameters:
+                    - '8'
+              tags:
+                -
+                  tag: component
+                  value: network
+                -
+                  tag: interface
+                  value: '{#IFNAME}'
+            -
+              uuid: d1faa9b1f90b440ea1e5f90aa7d6a733
+              name: 'OS: 网卡 {#IFNAME} 出流量'
+              type: ZABBIX_ACTIVE
+              key: 'net.if.out["{#IFNAME}"]'
+              history: 7d
+              units: bps
+              preprocessing:
+                -
+                  type: CHANGE_PER_SECOND
+                  parameters:
+                    - ''
+                -
+                  type: MULTIPLIER
+                  parameters:
+                    - '8'
+              tags:
+                -
+                  tag: component
+                  value: network
+                -
+                  tag: interface
+                  value: '{#IFNAME}'
+            -
+              uuid: 19a6bf4039a246bcb5db2eb8a3afffe6
+              name: 'OS: 网卡 {#IFNAME} 状态'
+              type: ZABBIX_ACTIVE
+              key: 'vfs.file.contents["/sys/class/net/{#IFNAME}/operstate"]'
+              history: 7d
+              description: 'Reference: https://www.kernel.org/doc/Documentation/networking/operstates.txt'
+              valuemap:
+                name: ifOperStatus
+              preprocessing:
+                -
+                  type: JAVASCRIPT
+                  parameters:
+                    - |
+                      var newvalue;
+                      switch(value) {
+                        case "unknown":
+                          newvalue = 0;
+                          break;
+                        case "notpresent":
+                          newvalue = 1;
+                          break;
+                        case "down":
+                          newvalue = 2;
+                          break;
+                        case "lowerlayerdown":
+                          newvalue = 3;
+                          break;
+                        case "testing":
+                          newvalue = 4;
+                          break;
+                        case "dormant":
+                          newvalue = 5;
+                          break;
+                        case "up":
+                          newvalue = 6;
+                          break;  default:
+                          newvalue = "Problem parsing interface operstate in JS";
+                      }
+                      return newvalue;
+              tags:
+                -
+                  tag: component
+                  value: network
+                -
+                  tag: interface
+                  value: '{#IFNAME}'
+              trigger_prototypes:
+                -
+                  uuid: eee90f9f5d5f46cc91bfddeda8ea5006
+                  expression: '{$NET.IFCONTROL:"{#IFNAME}"}=1 and last(/Linux Active/vfs.file.contents["/sys/class/net/{#IFNAME}/operstate"])=2 and (last(/Linux Active/vfs.file.contents["/sys/class/net/{#IFNAME}/operstate"],#1)<>last(/Linux Active/vfs.file.contents["/sys/class/net/{#IFNAME}/operstate"],#2))'
+                  recovery_mode: RECOVERY_EXPRESSION
+                  recovery_expression: 'last(/Linux Active/vfs.file.contents["/sys/class/net/{#IFNAME}/operstate"])<>2 or {$NET.IFCONTROL:"{#IFNAME}"}=0'
+                  name: 'OS: 网卡 {#IFNAME} 状态异常'
+                  priority: AVERAGE
+                  description: |
+                    This trigger expression works as follows:
+                    1. Can be triggered if operations status is down.
+                    2. {$NET.IFCONTROL:"{#IFNAME}"}=1 - user can redefine Context macro to value - 0. That marks this interface as not important. No new trigger will be fired if this interface is down.
+                    3. {TEMPLATE_NAME:METRIC.diff()}=1) - trigger fires only if operational status was up(1) sometime before. (So, do not fire 'ethernal off' interfaces.)
+                    
+                    WARNING: if closed manually - won't fire again on next poll, because of .diff.
+                  tags:
+                    -
+                      tag: scope
+                      value: availability
+            -
+              uuid: 20acce56ede8456a9190f65683fc9388
+              name: 'OS: 网卡 {#IFNAME} 速率'
+              type: ZABBIX_ACTIVE
+              key: 'vfs.file.contents["/sys/class/net/{#IFNAME}/speed"]'
+              history: 7d
+              units: bps
+              description: |
+                Indicates the interface latest or current speed value. Value is an integer representing the link speed in bits/sec.
+                This attribute is only valid for interfaces that implement the ethtool get_link_ksettings method (mostly Ethernet).
+                Reference: https://www.kernel.org/doc/Documentation/ABI/testing/sysfs-class-net
+              preprocessing:
+                -
+                  type: MULTIPLIER
+                  parameters:
+                    - '1000000'
+                -
+                  type: DISCARD_UNCHANGED_HEARTBEAT
+                  parameters:
+                    - 1h
+              tags:
+                -
+                  tag: component
+                  value: network
+                -
+                  tag: interface
+                  value: '{#IFNAME}'
+            -
+              uuid: 695061521a3e4f74b5f16b063407e07e
+              name: 'OS: 网卡 {#IFNAME} 类型'
+              type: ZABBIX_ACTIVE
+              key: 'vfs.file.contents["/sys/class/net/{#IFNAME}/type"]'
+              history: 7d
+              description: |
+                Indicates the interface protocol type as a decimal value.
+                See include/uapi/linux/if_arp.h for all possible values.
+                Reference: https://www.kernel.org/doc/Documentation/ABI/testing/sysfs-class-net
+              valuemap:
+                name: 'Linux::Interface protocol types'
+              preprocessing:
+                -
+                  type: DISCARD_UNCHANGED_HEARTBEAT
+                  parameters:
+                    - 1h
+              tags:
+                -
+                  tag: component
+                  value: network
+                -
+                  tag: interface
+                  value: '{#IFNAME}'
+          trigger_prototypes:
+            -
+              uuid: 7cc93bb073d440f3b102076dd235801b
+              expression: |
+                (avg(/Linux Active/net.if.in["{#IFNAME}"],15m)>({$NET.IF.UTIL.CRIT:"{#IFNAME}"}/100)*last(/Linux Active/vfs.file.contents["/sys/class/net/{#IFNAME}/speed"]) or
+                avg(/Linux Active/net.if.out["{#IFNAME}"],15m)>({$NET.IF.UTIL.CRIT:"{#IFNAME}"}/100)*last(/Linux Active/vfs.file.contents["/sys/class/net/{#IFNAME}/speed"])) and
+                last(/Linux Active/vfs.file.contents["/sys/class/net/{#IFNAME}/speed"])>0
+              recovery_mode: RECOVERY_EXPRESSION
+              recovery_expression: |
+                avg(/Linux Active/net.if.in["{#IFNAME}"],15m)<(({$NET.IF.UTIL.CRIT:"{#IFNAME}"}-3)/100)*last(/Linux Active/vfs.file.contents["/sys/class/net/{#IFNAME}/speed"]) and
+                avg(/Linux Active/net.if.out["{#IFNAME}"],15m)<(({$NET.IF.UTIL.CRIT:"{#IFNAME}"}-3)/100)*last(/Linux Active/vfs.file.contents["/sys/class/net/{#IFNAME}/speed"])
+              name: 'OS: 网卡 {#IFNAME} 带宽使用率持续 15 分钟大于 {$NET.IF.UTIL.CRIT:"{#IFNAME}"}%'
+              priority: AVERAGE
+              description: 'The network interface utilization is close to its estimated maximum bandwidth.'
+              dependencies:
+                -
+                  name: 'OS: 网卡 {#IFNAME} 状态异常'
+                  expression: '{$NET.IFCONTROL:"{#IFNAME}"}=1 and last(/Linux Active/vfs.file.contents["/sys/class/net/{#IFNAME}/operstate"])=2 and (last(/Linux Active/vfs.file.contents["/sys/class/net/{#IFNAME}/operstate"],#1)<>last(/Linux Active/vfs.file.contents["/sys/class/net/{#IFNAME}/operstate"],#2))'
+                  recovery_expression: 'last(/Linux Active/vfs.file.contents["/sys/class/net/{#IFNAME}/operstate"])<>2 or {$NET.IFCONTROL:"{#IFNAME}"}=0'
+              tags:
+                -
+                  tag: scope
+                  value: performance
+          preprocessing:
+            -
+              type: DISCARD_UNCHANGED_HEARTBEAT
+              parameters:
+                - 1h
+        -
+          uuid: e1dfed3daa6c4d3195914d11eaf397a8
+          name: 块设备自动发现
+          type: ZABBIX_ACTIVE
+          key: vfs.dev.discovery
+          filter:
+            evaltype: AND
+            conditions:
+              -
+                macro: '{#DEVTYPE}'
+                value: disk
+                formulaid: C
+              -
+                macro: '{#DEVNAME}'
+                value: '{$VFS.DEV.DEVNAME.MATCHES}'
+                formulaid: A
+              -
+                macro: '{#DEVNAME}'
+                value: '{$VFS.DEV.DEVNAME.NOT_MATCHES}'
+                operator: NOT_MATCHES_REGEX
+                formulaid: B
+          lifetime: 3h
+          item_prototypes:
+            -
+              uuid: 8cb574f653864ed2b585f08fe2869278
+              name: 'OS: 块设备 {#DEVNAME} 磁盘平均队列大小'
+              type: DEPENDENT
+              key: 'vfs.dev.queue_size[{#DEVNAME}]'
+              delay: '0'
+              history: 7d
+              value_type: FLOAT
+              units: '%'
+              description: 'This item is the percentage of elapsed time that the selected disk drive was busy servicing read or writes requests.'
+              preprocessing:
+                -
+                  type: JSONPATH
+                  parameters:
+                    - '$[10]'
+                -
+                  type: CHANGE_PER_SECOND
+                  parameters:
+                    - ''
+                -
+                  type: MULTIPLIER
+                  parameters:
+                    - '0.001'
+              master_item:
+                key: 'vfs.file.contents[/sys/block/{#DEVNAME}/stat]'
+              tags:
+                -
+                  tag: component
+                  value: storage
+                -
+                  tag: disk
+                  value: '{#DEVNAME}'
+            -
+              uuid: 7b070052a65e40ec83ff9b8fff063874
+              name: 'OS: 块设备 {#DEVNAME} 读等待时间'
+              type: CALCULATED
+              key: 'vfs.dev.read.await[{#DEVNAME}]'
+              history: 7d
+              value_type: FLOAT
+              units: '!ms'
+              params: '(last(//vfs.dev.read.time.rate[{#DEVNAME}])/(last(//vfs.dev.read.rate[{#DEVNAME}])+(last(//vfs.dev.read.rate[{#DEVNAME}])=0)))*1000*(last(//vfs.dev.read.rate[{#DEVNAME}]) > 0)'
+              description: 'This formula contains two boolean expressions that evaluates to 1 or 0 in order to set calculated metric to zero and to avoid division by zero exception.'
+              tags:
+                -
+                  tag: component
+                  value: storage
+                -
+                  tag: disk
+                  value: '{#DEVNAME}'
+            -
+              uuid: 14dee36f24dd43bf881a63c177fc0587
+              name: 'OS: 块设备 {#DEVNAME} 读速率'
+              type: DEPENDENT
+              key: 'vfs.dev.read.rate[{#DEVNAME}]'
+              delay: '0'
+              history: 7d
+              value_type: FLOAT
+              units: '!r/s'
+              preprocessing:
+                -
+                  type: JSONPATH
+                  parameters:
+                    - '$[0]'
+                -
+                  type: CHANGE_PER_SECOND
+                  parameters:
+                    - ''
+              master_item:
+                key: 'vfs.file.contents[/sys/block/{#DEVNAME}/stat]'
+              tags:
+                -
+                  tag: component
+                  value: storage
+                -
+                  tag: disk
+                  value: '{#DEVNAME}'
+            -
+              uuid: 954a32e87f2848d39479c40388567887
+              name: 'OS: 块设备 {#DEVNAME} 读时间'
+              type: DEPENDENT
+              key: 'vfs.dev.read.time.rate[{#DEVNAME}]'
+              delay: '0'
+              history: 7d
+              value_type: FLOAT
+              preprocessing:
+                -
+                  type: JSONPATH
+                  parameters:
+                    - '$[3]'
+                -
+                  type: CHANGE_PER_SECOND
+                  parameters:
+                    - ''
+                -
+                  type: MULTIPLIER
+                  parameters:
+                    - '0.001'
+              master_item:
+                key: 'vfs.file.contents[/sys/block/{#DEVNAME}/stat]'
+              tags:
+                -
+                  tag: component
+                  value: storage
+                -
+                  tag: disk
+                  value: '{#DEVNAME}'
+            -
+              uuid: 3b5ac862959e41e390e6eb14523cfa98
+              name: 'OS: 块设备 {#DEVNAME} 容量'
+              type: DEPENDENT
+              key: 'vfs.dev.size[{#DEVNAME}]'
+              delay: '0'
+              history: 7d
+              units: B
+              preprocessing:
+                -
+                  type: JSONPATH
+                  parameters:
+                    - '$.[?(@.name=="{#DEVNAME}")].blocks.first()'
+                -
+                  type: MULTIPLIER
+                  parameters:
+                    - '1024'
+                -
+                  type: DISCARD_UNCHANGED_HEARTBEAT
+                  parameters:
+                    - 1h
+              master_item:
+                key: 'vfs.file.contents[/proc/partitions]'
+              tags:
+                -
+                  tag: component
+                  value: storage
+                -
+                  tag: disk
+                  value: '{#DEVNAME}'
+            -
+              uuid: 252a6b0c5b8d4fa0949f00fe7994f07d
+              name: 'OS: 块设备 {#DEVNAME} 繁忙率'
+              type: DEPENDENT
+              key: 'vfs.dev.util[{#DEVNAME}]'
+              delay: '0'
+              history: 7d
+              value_type: FLOAT
+              units: '%'
+              description: 'This item is the percentage of elapsed time that the selected disk drive was busy servicing read or writes requests.'
+              preprocessing:
+                -
+                  type: JSONPATH
+                  parameters:
+                    - '$[9]'
+                -
+                  type: CHANGE_PER_SECOND
+                  parameters:
+                    - ''
+                -
+                  type: MULTIPLIER
+                  parameters:
+                    - '0.1'
+              master_item:
+                key: 'vfs.file.contents[/sys/block/{#DEVNAME}/stat]'
+              tags:
+                -
+                  tag: component
+                  value: storage
+                -
+                  tag: disk
+                  value: '{#DEVNAME}'
+            -
+              uuid: e8ae60eea3224e249def75b70ac770e2
+              name: 'OS: 块设备 {#DEVNAME} 写等待时间'
+              type: CALCULATED
+              key: 'vfs.dev.write.await[{#DEVNAME}]'
+              history: 7d
+              value_type: FLOAT
+              units: '!ms'
+              params: '(last(//vfs.dev.write.time.rate[{#DEVNAME}])/(last(//vfs.dev.write.rate[{#DEVNAME}])+(last(//vfs.dev.write.rate[{#DEVNAME}])=0)))*1000*(last(//vfs.dev.write.rate[{#DEVNAME}]) > 0)'
+              tags:
+                -
+                  tag: component
+                  value: storage
+                -
+                  tag: disk
+                  value: '{#DEVNAME}'
+            -
+              uuid: 9c2ed1262ea540abac1b1d6c138a87b4
+              name: 'OS: 块设备 {#DEVNAME} 写速率'
+              type: DEPENDENT
+              key: 'vfs.dev.write.rate[{#DEVNAME}]'
+              delay: '0'
+              history: 7d
+              value_type: FLOAT
+              units: '!w/s'
+              description: 'w/s. The number (after merges) of write requests completed per second for the device.'
+              preprocessing:
+                -
+                  type: JSONPATH
+                  parameters:
+                    - '$[4]'
+                -
+                  type: CHANGE_PER_SECOND
+                  parameters:
+                    - ''
+              master_item:
+                key: 'vfs.file.contents[/sys/block/{#DEVNAME}/stat]'
+              tags:
+                -
+                  tag: component
+                  value: storage
+                -
+                  tag: disk
+                  value: '{#DEVNAME}'
+            -
+              uuid: 8582632228b84b2ea86b6409584442d0
+              name: 'OS: 块设备 {#DEVNAME} 写时间'
+              type: DEPENDENT
+              key: 'vfs.dev.write.time.rate[{#DEVNAME}]'
+              delay: '0'
+              history: 7d
+              value_type: FLOAT
+              preprocessing:
+                -
+                  type: JSONPATH
+                  parameters:
+                    - '$[7]'
+                -
+                  type: CHANGE_PER_SECOND
+                  parameters:
+                    - ''
+                -
+                  type: MULTIPLIER
+                  parameters:
+                    - '0.001'
+              master_item:
+                key: 'vfs.file.contents[/sys/block/{#DEVNAME}/stat]'
+              tags:
+                -
+                  tag: component
+                  value: storage
+                -
+                  tag: disk
+                  value: '{#DEVNAME}'
+            -
+              uuid: ac87c216390e4074a97e29cb1c3a427b
+              name: '获取块设备 {#DEVNAME} 信息'
+              type: ZABBIX_ACTIVE
+              key: 'vfs.file.contents[/sys/block/{#DEVNAME}/stat]'
+              history: '0'
+              trends: '0'
+              value_type: TEXT
+              description: 'Get contents of /sys/block/{#DEVNAME}/stat for disk stats.'
+              preprocessing:
+                -
+                  type: JAVASCRIPT
+                  parameters:
+                    - 'return JSON.stringify(value.trim().split(/ +/));'
+                -
+                  type: DISCARD_UNCHANGED_HEARTBEAT
+                  parameters:
+                    - 1h
+              tags:
+                -
+                  tag: component
+                  value: raw
+          trigger_prototypes:
+            -
+              uuid: 9d42a5b5cdef4fce9d7e3b6a9b8c7a66
+              expression: 'min(/Linux Active/vfs.dev.read.await[{#DEVNAME}],15m) > {$VFS.DEV.READ.AWAIT.WARN:"{#DEVNAME}"} or min(/Linux Active/vfs.dev.write.await[{#DEVNAME}],15m) > {$VFS.DEV.WRITE.AWAIT.WARN:"{#DEVNAME}"}'
+              name: 'OS: 块设备 {#DEVNAME} 读/写等待时间大于 {$VFS.DEV.READ.AWAIT.WARN:"{#DEVNAME}"}ms'
+              priority: WARNING
+          preprocessing:
+            -
+              type: DISCARD_UNCHANGED_HEARTBEAT
+              parameters:
+                - 1h
+        -
+          uuid: 4959b0eb85d64547a9a4dd5d22775044
+          name: 文件系统自动发现
+          type: DEPENDENT
+          key: vfs.fs.discovery
+          delay: '0'
+          filter:
+            evaltype: AND
+            conditions:
+              -
+                macro: '{#FSNAME}'
+                value: '{$VFS.FS.FSNAME.MATCHES}'
+                formulaid: A
+              -
+                macro: '{#FSNAME}'
+                value: '{$VFS.FS.FSNAME.NOT_MATCHES}'
+                operator: NOT_MATCHES_REGEX
+                formulaid: B
+          lifetime: 3h
+          description: 'Discovery of file systems of different types.'
+          item_prototypes:
+            -
+              uuid: 0966a2c395f04354b5184e86f7de90db
+              name: 'OS: 文件系统 {#FSNAME} inodes 可用率'
+              type: ZABBIX_ACTIVE
+              key: 'vfs.fs.inode[{#FSNAME},pfree]'
+              history: 7d
+              value_type: FLOAT
+              units: '%'
+              tags:
+                -
+                  tag: component
+                  value: storage
+                -
+                  tag: filesystem
+                  value: '{#FSNAME}'
+              trigger_prototypes:
+                -
+                  uuid: 4e149edd0f6b40d8bdb636e681afcc93
+                  expression: 'min(/Linux Active/vfs.fs.inode[{#FSNAME},pfree],5m)<{$VFS.FS.INODE.PFREE.MIN.CRIT:"{#FSNAME}"}'
+                  name: 'OS: 文件系统 {#FSNAME} inodes 可用率低于 {$VFS.FS.INODE.PFREE.MIN.CRIT:"{#FSNAME}"}%'
+                  priority: AVERAGE
+                  description: |
+                    It may become impossible to write to disk if there are no index nodes left.
+                    As symptoms, 'No space left on device' or 'Disk is full' errors may be seen even though free space is available.
+                  tags:
+                    -
+                      tag: scope
+                      value: capacity
+                    -
+                      tag: scope
+                      value: performance
+            -
+              uuid: b6593bcc43314e84b235752c60b72bbb
+              name: 'OS: 文件系统 {#FSNAME} 使用率'
+              type: ZABBIX_ACTIVE
+              key: 'vfs.fs.size[{#FSNAME},pused]'
+              history: 7d
+              value_type: FLOAT
+              units: '%'
+              description: 'Space utilization in % for {#FSNAME}'
+              tags:
+                -
+                  tag: component
+                  value: storage
+                -
+                  tag: filesystem
+                  value: '{#FSNAME}'
+            -
+              uuid: 3a542f94ba2847198621428fddbc80d4
+              name: 'OS: 文件系统 {#FSNAME} 容量'
+              type: ZABBIX_ACTIVE
+              key: 'vfs.fs.size[{#FSNAME},total]'
+              history: 7d
+              units: B
+              description: 'Total space in Bytes'
+              preprocessing:
+                -
+                  type: DISCARD_UNCHANGED_HEARTBEAT
+                  parameters:
+                    - 1h
+              tags:
+                -
+                  tag: component
+                  value: storage
+                -
+                  tag: filesystem
+                  value: '{#FSNAME}'
+            -
+              uuid: a148fcb609344edfbfd646f3cd794abe
+              name: 'OS: 文件系统 {#FSNAME} 已使用'
+              type: ZABBIX_ACTIVE
+              key: 'vfs.fs.size[{#FSNAME},used]'
+              history: 7d
+              units: B
+              description: 'Used storage in Bytes'
+              tags:
+                -
+                  tag: component
+                  value: storage
+                -
+                  tag: filesystem
+                  value: '{#FSNAME}'
+          trigger_prototypes:
+            -
+              uuid: f45210c88a23419c978694bd418c54e1
+              expression: |
+                last(/Linux Active/vfs.fs.size[{#FSNAME},pused])>{$DISK.UTIL.CRIT} and
+                ((last(/Linux Active/vfs.fs.size[{#FSNAME},total])-last(/Linux Active/vfs.fs.size[{#FSNAME},used]))<{$VFS.FS.FREE.MIN.CRIT:"{#FSNAME}"} or timeleft(/Linux Active/vfs.fs.size[{#FSNAME},pused],1h,100)<1d)
+              name: 'OS: 文件系统 {#FSNAME} 使用率大于 {$DISK.UTIL.CRIT}%'
+              priority: AVERAGE
+              description: |
+                Two conditions should match: First, space utilization should be above {$DISK.UTIL.CRIT}.
+                 Second condition should be one of the following:
+                 - The disk free space is less than {$VFS.FS.FREE.MIN.CRIT:"{#FSNAME}"}.
+                 - The disk will be full in less than 24 hours.
+              tags:
+                -
+                  tag: scope
+                  value: availability
+                -
+                  tag: scope
+                  value: capacity
+          master_item:
+            key: 'vfs.file.contents[/proc/mounts]'
+          lld_macro_paths:
+            -
+              lld_macro: '{#FSNAME}'
+              path: $.name
+          preprocessing:
+            -
+              type: DISCARD_UNCHANGED_HEARTBEAT
+              parameters:
+                - 1h
+      tags:
+        -
+          tag: class
+          value: os
+        -
+          tag: target
+          value: linux
+      macros:
+        -
+          macro: '{$VFS.DEV.DEVNAME.MATCHES}'
+          value: .+
+          description: 'This macro is used in block devices discovery. Can be overridden on the host or linked template level'
+        -
+          macro: '{$VFS.DEV.DEVNAME.NOT_MATCHES}'
+          value: '^(loop[0-9]*|sd[a-z][0-9]+|nbd[0-9]+|sr[0-9]+|fd[0-9]+|dm-[0-9]+|ram[0-9]+|ploop[a-z0-9]+|md[0-9]*|hcp[0-9]*|zram[0-9]*)'
+          description: 'This macro is used in block devices discovery. Can be overridden on the host or linked template level'
+        -
+          macro: '{$VFS.DEV.READ.AWAIT.WARN}'
+          value: '20'
+          description: 'Disk read average response time (in ms) before the trigger would fire'
+        -
+          macro: '{$VFS.DEV.WRITE.AWAIT.WARN}'
+          value: '20'
+          description: 'Disk write average response time (in ms) before the trigger would fire'
+        -
+          macro: '{$VFS.FS.FREE.MIN.CRIT}'
+          value: 5G
+          description: 'The critical threshold of the filesystem utilization.'
+        -
+          macro: '{$VFS.FS.FSNAME.MATCHES}'
+          value: .+
+          description: 'This macro is used in filesystems discovery. Can be overridden on the host or linked template level'
+        -
+          macro: '{$VFS.FS.FSNAME.NOT_MATCHES}'
+          value: ^(/dev|/sys|/run|/proc|.+/shm$)
+          description: 'This macro is used in filesystems discovery. Can be overridden on the host or linked template level'
+        -
+          macro: '{$VFS.FS.FSTYPE.MATCHES}'
+          value: ^(btrfs|ext2|ext3|ext4|reiser|xfs|ffs|ufs|jfs|jfs2|vxfs|hfs|apfs|refs|ntfs|fat32|zfs)$
+          description: 'This macro is used in filesystems discovery. Can be overridden on the host or linked template level'
+        -
+          macro: '{$VFS.FS.FSTYPE.NOT_MATCHES}'
+          value: ^\s$
+          description: 'This macro is used in filesystems discovery. Can be overridden on the host or linked template level'
+        -
+          macro: '{$VFS.FS.INODE.PFREE.MIN.CRIT}'
+          value: '10'
+      valuemaps:
+        -
+          uuid: 24d3186374374c869fed4cca5a356503
+          name: available
+          mappings:
+            -
+              value: '0'
+              newvalue: 'not available'
+            -
+              value: '1'
+              newvalue: available
+            -
+              value: '2'
+              newvalue: unknown
+        -
+          uuid: 16a21628826a4e94a8e7d99bd121cc3d
+          name: ifOperStatus
+          mappings:
+            -
+              value: '0'
+              newvalue: unknown
+            -
+              value: '1'
+              newvalue: notpresent
+            -
+              value: '2'
+              newvalue: down
+            -
+              value: '3'
+              newvalue: lowerlayerdown
+            -
+              value: '4'
+              newvalue: testing
+            -
+              value: '5'
+              newvalue: dormant
+            -
+              value: '6'
+              newvalue: up
+        -
+          uuid: 9cfdd99e7edb4b24b5170c9c16adea4e
+          name: 'Linux::Interface protocol types'
+          mappings:
+            -
+              value: '0'
+              newvalue: 'from KA9Q: NET/ROM pseudo'
+            -
+              value: '1'
+              newvalue: Ethernet
+            -
+              value: '2'
+              newvalue: 'Experimental Ethernet'
+            -
+              value: '3'
+              newvalue: 'AX.25 Level 2'
+            -
+              value: '4'
+              newvalue: 'PROnet token ring'
+            -
+              value: '5'
+              newvalue: Chaosnet
+            -
+              value: '6'
+              newvalue: 'IEEE 802.2 Ethernet/TR/TB'
+            -
+              value: '7'
+              newvalue: ARCnet
+            -
+              value: '8'
+              newvalue: APPLEtalk
+            -
+              value: '15'
+              newvalue: 'Frame Relay DLCI'
+            -
+              value: '19'
+              newvalue: ATM
+            -
+              value: '23'
+              newvalue: 'Metricom STRIP (new IANA id)'
+            -
+              value: '24'
+              newvalue: 'IEEE 1394 IPv4 - RFC 2734'
+            -
+              value: '27'
+              newvalue: EUI-64
+            -
+              value: '32'
+              newvalue: InfiniBand
+            -
+              value: '256'
+              newvalue: ARPHRD_SLIP
+            -
+              value: '257'
+              newvalue: ARPHRD_CSLIP
+            -
+              value: '258'
+              newvalue: ARPHRD_SLIP6
+            -
+              value: '259'
+              newvalue: ARPHRD_CSLIP6
+            -
+              value: '260'
+              newvalue: 'Notional KISS type'
+            -
+              value: '264'
+              newvalue: ARPHRD_ADAPT
+            -
+              value: '270'
+              newvalue: ARPHRD_ROSE
+            -
+              value: '271'
+              newvalue: 'CCITT X.25'
+            -
+              value: '272'
+              newvalue: 'Boards with X.25 in firmware'
+            -
+              value: '280'
+              newvalue: 'Controller Area Network'
+            -
+              value: '512'
+              newvalue: ARPHRD_PPP
+            -
+              value: '513'
+              newvalue: 'Cisco HDLC'
+            -
+              value: '516'
+              newvalue: LAPB
+            -
+              value: '517'
+              newvalue: 'Digital''s DDCMP protocol'
+            -
+              value: '518'
+              newvalue: 'Raw HDLC'
+            -
+              value: '519'
+              newvalue: 'Raw IP'
+            -
+              value: '768'
+              newvalue: 'IPIP tunnel'
+            -
+              value: '769'
+              newvalue: 'IP6IP6 tunnel'
+            -
+              value: '770'
+              newvalue: 'Frame Relay Access Device'
+            -
+              value: '771'
+              newvalue: 'SKIP vif'
+            -
+              value: '772'
+              newvalue: 'Loopback device'
+            -
+              value: '773'
+              newvalue: 'Localtalk device'
+            -
+              value: '774'
+              newvalue: 'Fiber Distributed Data Interface'
+            -
+              value: '775'
+              newvalue: 'AP1000 BIF'
+            -
+              value: '776'
+              newvalue: 'sit0 device - IPv6-in-IPv4'
+            -
+              value: '777'
+              newvalue: 'IP over DDP tunneller'
+            -
+              value: '778'
+              newvalue: 'GRE over IP'
+            -
+              value: '779'
+              newvalue: 'PIMSM register interface'
+            -
+              value: '780'
+              newvalue: 'High Performance Parallel Interface'
+            -
+              value: '781'
+              newvalue: 'Nexus 64Mbps Ash'
+            -
+              value: '782'
+              newvalue: 'Acorn Econet'
+            -
+              value: '783'
+              newvalue: Linux-IrDA
+            -
+              value: '784'
+              newvalue: 'Point to point fibrechannel'
+            -
+              value: '785'
+              newvalue: 'Fibrechannel arbitrated loop'
+            -
+              value: '786'
+              newvalue: 'Fibrechannel public loop'
+            -
+              value: '787'
+              newvalue: 'Fibrechannel fabric'
+            -
+              value: '800'
+              newvalue: 'Magic type ident for TR'
+            -
+              value: '801'
+              newvalue: 'IEEE 802.11'
+            -
+              value: '802'
+              newvalue: 'IEEE 802.11 + Prism2 header'
+            -
+              value: '803'
+              newvalue: 'IEEE 802.11 + radiotap header'
+            -
+              value: '804'
+              newvalue: ARPHRD_IEEE802154
+            -
+              value: '805'
+              newvalue: 'IEEE 802.15.4 network monitor'
+            -
+              value: '820'
+              newvalue: 'PhoNet media type'
+            -
+              value: '821'
+              newvalue: 'PhoNet pipe header'
+            -
+              value: '822'
+              newvalue: 'CAIF media type'
+            -
+              value: '823'
+              newvalue: 'GRE over IPv6'
+            -
+              value: '824'
+              newvalue: 'Netlink header'
+            -
+              value: '825'
+              newvalue: 'IPv6 over LoWPAN'
+            -
+              value: '826'
+              newvalue: 'Vsock monitor header'
+        -
+          uuid: 82e73ff6ca6540fb8c66b3f02ef094d3
+          name: state
+          mappings:
+            -
+              value: '0'
+              newvalue: down
+            -
+              value: '1'
+              newvalue: up
+  triggers:
+    -
+      uuid: c9c4b59f7c62465a9dd45861d5b06c0c
+      expression: |
+        min(/Linux Active/system.cpu.load[all,avg1],5m)/last(/Linux Active/system.cpu.num)>1.5
+        and last(/Linux Active/system.cpu.load[all,avg5])>0
+        and last(/Linux Active/system.cpu.load[all,avg15])>0
+      name: 'OS: CPU 负载大于 1.5'
+      priority: AVERAGE
+      description: 'Per CPU load average is too high. Your system may be slow to respond.'
+      tags:
+        -
+          tag: scope
+          value: capacity
+        -
+          tag: scope
+          value: performance
+    -
+      uuid: 128d424276cc43a1bd0922ee79a298fb
+      expression: 'max(/Linux Active/system.swap.size[,pfree],5m)<50 and last(/Linux Active/system.swap.size[,total])>0'
+      name: 'OS: 交换分区可用率持续 5 分钟小于 50%'
+      priority: WARNING
+      description: 'This trigger is ignored, if there is no swap configured.'
+      dependencies:
+        -
+          name: 'OS: 内存使用率持续 5 分钟大于 {$MEMORY.UTIL.CRIT}%'
+          expression: 'min(/Linux Active/vm.memory.util,5m)>{$MEMORY.UTIL.CRIT}'
+      tags:
+        -
+          tag: scope
+          value: capacity

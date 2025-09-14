@@ -1,0 +1,573 @@
+{
+  "events": [
+    {
+      "desc": "AC设备冷启动事件，系统重新初始化",
+      "event_type": "EVENT_TYPE_INFO",
+      "identifier": "ac_cold_start",
+      "name": "AC冷启动",
+      "output_data": [
+        {
+          "data_type": {
+            "specs": {
+              "length": 64
+            }
+          },
+          "desc": "AC系统名称",
+          "identifier": "system_name",
+          "name": "系统名称"
+        },
+        {
+          "data_type": {
+            "specs": {
+              "max": 3.1536E7,
+              "min": 0.0,
+              "unit": "s"
+            },
+            "type": "int64"
+          },
+          "desc": "AC运行时间",
+          "identifier": "uptime",
+          "name": "运行时间"
+        }
+      ]
+    },
+    {
+      "desc": "AP设备离线告警事件",
+      "event_type": "EVENT_TYPE_ALERT",
+      "identifier": "ap_offline",
+      "name": "AP离线",
+      "output_data": [
+        {
+          "data_type": {
+            "specs": {
+              "length": 64
+            }
+          },
+          "desc": "离线的AP名称",
+          "identifier": "ap_name",
+          "name": "AP名称"
+        },
+        {
+          "data_type": {
+            "specs": {
+              "length": 32
+            }
+          },
+          "desc": "AP IP地址",
+          "identifier": "ap_ip",
+          "name": "AP地址"
+        }
+      ]
+    },
+    {
+      "desc": "AP设备上线事件",
+      "event_type": "EVENT_TYPE_INFO",
+      "identifier": "ap_online",
+      "name": "AP上线",
+      "output_data": [
+        {
+          "data_type": {
+            "specs": {
+              "length": 64
+            }
+          },
+          "desc": "上线的AP名称",
+          "identifier": "ap_name",
+          "name": "AP名称"
+        },
+        {
+          "data_type": {
+            "specs": {
+              "length": 32
+            }
+          },
+          "desc": "AP IP地址",
+          "identifier": "ap_ip",
+          "name": "AP地址"
+        }
+      ]
+    },
+    {
+      "desc": "AC设备CPU使用率过高告警",
+      "event_type": "EVENT_TYPE_ALERT",
+      "identifier": "high_cpu_usage",
+      "name": "CPU使用率过高",
+      "output_data": [
+        {
+          "data_type": {
+            "specs": {
+              "max": 100.0,
+              "min": 0.0,
+              "unit": "%"
+            },
+            "type": "float"
+          },
+          "desc": "当前CPU使用率",
+          "identifier": "cpu_usage",
+          "name": "CPU使用率"
+        }
+      ]
+    },
+    {
+      "desc": "AC设备内存使用率过高告警",
+      "event_type": "EVENT_TYPE_ALERT",
+      "identifier": "high_memory_usage",
+      "name": "内存使用率过高",
+      "output_data": [
+        {
+          "data_type": {
+            "specs": {
+              "max": 100.0,
+              "min": 0.0,
+              "unit": "%"
+            },
+            "type": "float"
+          },
+          "desc": "当前内存使用率",
+          "identifier": "memory_usage",
+          "name": "内存使用率"
+        }
+      ]
+    },
+    {
+      "desc": "AC设备温度过高告警事件",
+      "event_type": "EVENT_TYPE_ALERT",
+      "identifier": "high_temperature",
+      "name": "温度过高",
+      "output_data": [
+        {
+          "data_type": {
+            "specs": {
+              "max": 100.0,
+              "min": -20.0,
+              "unit": "°C"
+            },
+            "type": "float"
+          },
+          "desc": "当前温度值",
+          "identifier": "temperature",
+          "name": "温度"
+        },
+        {
+          "data_type": {
+            "specs": {
+              "length": 32
+            }
+          },
+          "desc": "温度传感器位置",
+          "identifier": "sensor_location",
+          "name": "传感器位置"
+        }
+      ]
+    },
+    {
+      "desc": "AC设备风扇故障告警事件",
+      "event_type": "EVENT_TYPE_ALERT",
+      "identifier": "fan_failure",
+      "name": "风扇故障",
+      "output_data": [
+        {
+          "data_type": {
+            "specs": {
+              "max": 10,
+              "min": 1,
+              "unit": "个"
+            },
+            "type": "int32"
+          },
+          "desc": "故障风扇编号",
+          "identifier": "fan_index",
+          "name": "风扇编号"
+        },
+        {
+          "data_type": {
+            "specs": {
+              "max": 5,
+              "min": 1,
+              "unit": "状态"
+            },
+            "type": "int32"
+          },
+          "desc": "风扇状态：1=正常，2=异常",
+          "identifier": "fan_state",
+          "name": "风扇状态"
+        }
+      ]
+    },
+    {
+      "desc": "AC设备电源故障告警事件",
+      "event_type": "EVENT_TYPE_ALERT",
+      "identifier": "power_failure",
+      "name": "电源故障",
+      "output_data": [
+        {
+          "data_type": {
+            "specs": {
+              "max": 10,
+              "min": 1,
+              "unit": "个"
+            },
+            "type": "int32"
+          },
+          "desc": "故障电源编号",
+          "identifier": "power_index",
+          "name": "电源编号"
+        },
+        {
+          "data_type": {
+            "specs": {
+              "max": 5,
+              "min": 1,
+              "unit": "状态"
+            },
+            "type": "int32"
+          },
+          "desc": "电源状态：1=正常，2=未供电，3=休眠，4=未知",
+          "identifier": "power_state",
+          "name": "电源状态"
+        }
+      ]
+    }
+  ],
+  "properties": [
+    {
+      "data_type": {
+        "specs": {
+          "length": 128
+        }
+      },
+      "desc": "AC设备系统描述信息",
+      "identifier": "system_description",
+      "name": "系统描述"
+    },
+    {
+      "data_type": {
+        "specs": {
+          "length": 64
+        }
+      },
+      "desc": "AC设备系统名称",
+      "identifier": "system_name",
+      "name": "系统名称"
+    },
+    {
+      "data_type": {
+        "specs": {
+          "length": 128
+        }
+      },
+      "desc": "AC设备系统联系人信息",
+      "identifier": "system_contact",
+      "name": "系统联系人"
+    },
+    {
+      "data_type": {
+        "specs": {
+          "length": 128
+        }
+      },
+      "desc": "AC设备系统物理位置",
+      "identifier": "system_location",
+      "name": "系统位置"
+    },
+    {
+      "data_type": {
+        "specs": {
+          "max": 3.1536E7,
+          "min": 0.0,
+          "unit": "s"
+        },
+        "type": "int64"
+      },
+      "desc": "AC设备已运行时间",
+      "identifier": "system_uptime",
+      "name": "系统运行时间"
+    },
+    {
+      "data_type": {
+        "specs": {
+          "max": 10000,
+          "min": 0,
+          "unit": "个"
+        },
+        "type": "int32"
+      },
+      "desc": "连接到AC的2.4G频段终端数量",
+      "identifier": "ac_2_4g_terminals",
+      "name": "2.4G终端数"
+    },
+    {
+      "data_type": {
+        "specs": {
+          "max": 10000,
+          "min": 0,
+          "unit": "个"
+        },
+        "type": "int32"
+      },
+      "desc": "连接到AC的5G频段终端数量",
+      "identifier": "ac_5g_terminals",
+      "name": "5G终端数"
+    },
+    {
+      "data_type": {
+        "specs": {
+          "max": 1000,
+          "min": 0,
+          "unit": "个"
+        },
+        "type": "int32"
+      },
+      "desc": "AC管理的AP设备总数",
+      "identifier": "ac_ap_total",
+      "name": "AP总数"
+    },
+    {
+      "data_type": {
+        "specs": {
+          "max": 20000,
+          "min": 0,
+          "unit": "个"
+        },
+        "type": "int32"
+      },
+      "desc": "当前连接到AC的终端设备总数",
+      "identifier": "ac_current_stations",
+      "name": "当前终端数"
+    },
+    {
+      "data_type": {
+        "specs": {
+          "max": 1000,
+          "min": 0,
+          "unit": "个"
+        },
+        "type": "int32"
+      },
+      "desc": "AC设备最大允许连接的AP数量",
+      "identifier": "ac_max_ap_number",
+      "name": "最大AP数"
+    },
+    {
+      "data_type": {
+        "specs": {
+          "max": 20000,
+          "min": 0,
+          "unit": "个"
+        },
+        "type": "int32"
+      },
+      "desc": "AC设备最大允许连接的终端数量",
+      "identifier": "ac_max_station_number",
+      "name": "最大终端数"
+    },
+    {
+      "data_type": {
+        "specs": {
+          "max": 100.0,
+          "min": 0.0,
+          "unit": "%"
+        },
+        "type": "float"
+      },
+      "desc": "正常状态的AP设备占比",
+      "identifier": "ac_ap_normal_ratio",
+      "name": "AP正常率"
+    },
+    {
+      "data_type": {
+        "specs": {
+          "max": 1000,
+          "min": 0,
+          "unit": "个"
+        },
+        "type": "int32"
+      },
+      "desc": "已接入到AC的AP设备数量",
+      "identifier": "ac_joint_ap_number",
+      "name": "接入AP数"
+    },
+    {
+      "data_type": {
+        "specs": {
+          "max": 100.0,
+          "min": 0.0,
+          "unit": "%"
+        },
+        "type": "float"
+      },
+      "desc": "AC设备CPU平均使用率",
+      "identifier": "cpu_util_average",
+      "name": "CPU使用率"
+    },
+    {
+      "data_type": {
+        "specs": {
+          "max": 100.0,
+          "min": 0.0,
+          "unit": "%"
+        },
+        "type": "float"
+      },
+      "desc": "AC设备内存平均使用率",
+      "identifier": "memory_util_average",
+      "name": "内存使用率"
+    },
+    {
+      "data_type": {
+        "specs": {
+          "max": 100.0,
+          "min": -20.0,
+          "unit": "°C"
+        },
+        "type": "float"
+      },
+      "desc": "AC设备内部温度",
+      "identifier": "device_temperature",
+      "name": "设备温度"
+    },
+    {
+      "data_type": {
+        "specs": {
+          "max": 10000.0,
+          "min": 0.0,
+          "unit": "rpm"
+        },
+        "type": "float"
+      },
+      "desc": "AC设备风扇转速",
+      "identifier": "fan_speed",
+      "name": "风扇转速"
+    },
+    {
+      "data_type": {
+        "specs": {
+          "max": 5,
+          "min": 1,
+          "unit": "状态"
+        },
+        "type": "int32"
+      },
+      "desc": "AC设备风扇运行状态：1=正常，2=异常",
+      "identifier": "fan_status",
+      "name": "风扇状态"
+    },
+    {
+      "data_type": {
+        "specs": {
+          "max": 5,
+          "min": 1,
+          "unit": "状态"
+        },
+        "type": "int32"
+      },
+      "desc": "AC设备电源运行状态：1=正常，2=未供电，3=休眠，4=未知",
+      "identifier": "power_status",
+      "name": "电源状态"
+    },
+    {
+      "data_type": {
+        "specs": {
+          "max": 1000,
+          "min": 0,
+          "unit": "个"
+        },
+        "type": "int32"
+      },
+      "desc": "AC设备活跃网络接口数量",
+      "identifier": "active_interfaces",
+      "name": "活跃接口数"
+    },
+    {
+      "data_type": {
+        "specs": {
+          "max": 1000000.0,
+          "min": 0.0,
+          "unit": "bps"
+        },
+        "type": "double"
+      },
+      "desc": "AC设备总入向流量速率",
+      "identifier": "total_inbound_rate",
+      "name": "总入流量速率"
+    },
+    {
+      "data_type": {
+        "specs": {
+          "max": 1000000.0,
+          "min": 0.0,
+          "unit": "bps"
+        },
+        "type": "double"
+      },
+      "desc": "AC设备总出向流量速率",
+      "identifier": "total_outbound_rate",
+      "name": "总出流量速率"
+    },
+    {
+      "data_type": {
+        "specs": {
+          "max": 100.0,
+          "min": 0.0,
+          "unit": "%"
+        },
+        "type": "float"
+      },
+      "desc": "AC设备网络带宽使用率",
+      "identifier": "bandwidth_utilization",
+      "name": "带宽使用率"
+    },
+    {
+      "data_type": {
+        "specs": {
+          "max": 100.0,
+          "min": 0.0,
+          "unit": "%"
+        },
+        "type": "float"
+      },
+      "desc": "AC设备网络丢包率",
+      "identifier": "packet_loss_rate",
+      "name": "丢包率"
+    },
+    {
+      "data_type": {
+        "specs": {
+          "max": 1000.0,
+          "min": 0.0,
+          "unit": "ms"
+        },
+        "type": "float"
+      },
+      "desc": "AC设备ICMP Ping响应时间",
+      "identifier": "ping_response_time",
+      "name": "Ping延迟"
+    },
+    {
+      "data_type": {
+        "specs": {
+          "max": 100.0,
+          "min": 0.0,
+          "unit": "%"
+        },
+        "type": "float"
+      },
+      "desc": "AC设备ICMP Ping丢包率",
+      "identifier": "ping_loss_rate",
+      "name": "Ping丢包率"
+    },
+    {
+      "data_type": {
+        "specs": {
+          "max": 2,
+          "min": 0,
+          "unit": "状态"
+        },
+        "type": "int32"
+      },
+      "desc": "AC设备ICMP Ping连通性：0=不可达，1=可达",
+      "identifier": "ping_status",
+      "name": "Ping状态"
+    }
+  ]
+}

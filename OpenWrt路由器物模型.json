@@ -1,0 +1,636 @@
+{
+  "events": [
+    {
+      "desc": "路由器启动事件，系统重新初始化",
+      "event_type": "EVENT_TYPE_INFO",
+      "identifier": "router_boot",
+      "name": "路由器启动",
+      "output_data": [
+        {
+          "data_type": {
+            "specs": {
+              "length": 64
+            }
+          },
+          "desc": "路由器主机名",
+          "identifier": "hostname",
+          "name": "主机名"
+        },
+        {
+          "data_type": {
+            "specs": {
+              "max": 3.1536E7,
+              "min": 0.0,
+              "unit": "s"
+            },
+            "type": "int64"
+          },
+          "desc": "系统运行时间",
+          "identifier": "uptime",
+          "name": "运行时间"
+        }
+      ]
+    },
+    {
+      "desc": "路由器CPU使用率过高告警事件",
+      "event_type": "EVENT_TYPE_ALERT",
+      "identifier": "high_cpu_usage",
+      "name": "CPU使用率过高",
+      "output_data": [
+        {
+          "data_type": {
+            "specs": {
+              "max": 100.0,
+              "min": 0.0,
+              "unit": "%"
+            },
+            "type": "float"
+          },
+          "desc": "当前CPU使用率",
+          "identifier": "cpu_usage",
+          "name": "CPU使用率"
+        }
+      ]
+    },
+    {
+      "desc": "路由器内存使用率过高告警事件",
+      "event_type": "EVENT_TYPE_ALERT",
+      "identifier": "high_memory_usage",
+      "name": "内存使用率过高",
+      "output_data": [
+        {
+          "data_type": {
+            "specs": {
+              "max": 100.0,
+              "min": 0.0,
+              "unit": "%"
+            },
+            "type": "float"
+          },
+          "desc": "当前内存使用率",
+          "identifier": "memory_usage",
+          "name": "内存使用率"
+        }
+      ]
+    },
+    {
+      "desc": "网络接口离线告警事件",
+      "event_type": "EVENT_TYPE_ALERT",
+      "identifier": "interface_down",
+      "name": "接口离线",
+      "output_data": [
+        {
+          "data_type": {
+            "specs": {
+              "length": 32
+            }
+          },
+          "desc": "离线的网络接口名称",
+          "identifier": "interface_name",
+          "name": "接口名称"
+        }
+      ]
+    },
+    {
+      "desc": "DHCP客户端数量异常告警",
+      "event_type": "EVENT_TYPE_ALERT",
+      "identifier": "dhcp_clients_abnormal",
+      "name": "DHCP客户端异常",
+      "output_data": [
+        {
+          "data_type": {
+            "specs": {
+              "max": 1000,
+              "min": 0,
+              "unit": "个"
+            },
+            "type": "int32"
+          },
+          "desc": "当前DHCP客户端数量",
+          "identifier": "client_count",
+          "name": "客户端数量"
+        }
+      ]
+    },
+    {
+      "desc": "路由器系统负载过高告警",
+      "event_type": "EVENT_TYPE_ALERT",
+      "identifier": "high_system_load",
+      "name": "系统负载过高",
+      "output_data": [
+        {
+          "data_type": {
+            "specs": {
+              "max": 100.0,
+              "min": 0.0,
+              "unit": "load"
+            },
+            "type": "float"
+          },
+          "desc": "1分钟平均负载",
+          "identifier": "load1",
+          "name": "1分钟负载"
+        }
+      ]
+    },
+    {
+      "desc": "路由器存储空间不足告警",
+      "event_type": "EVENT_TYPE_ALERT",
+      "identifier": "low_disk_space",
+      "name": "存储空间不足",
+      "output_data": [
+        {
+          "data_type": {
+            "specs": {
+              "max": 100.0,
+              "min": 0.0,
+              "unit": "%"
+            },
+            "type": "float"
+          },
+          "desc": "磁盘使用率",
+          "identifier": "disk_usage",
+          "name": "磁盘使用率"
+        }
+      ]
+    },
+    {
+      "desc": "路由器温度过高告警事件",
+      "event_type": "EVENT_TYPE_ALERT",
+      "identifier": "high_temperature",
+      "name": "温度过高",
+      "output_data": [
+        {
+          "data_type": {
+            "specs": {
+              "max": 100.0,
+              "min": -20.0,
+              "unit": "°C"
+            },
+            "type": "float"
+          },
+          "desc": "当前设备温度",
+          "identifier": "temperature",
+          "name": "设备温度"
+        }
+      ]
+    }
+  ],
+  "properties": [
+    {
+      "data_type": {
+        "specs": {
+          "max": 100.0,
+          "min": 0.0,
+          "unit": "%"
+        },
+        "type": "float"
+      },
+      "desc": "路由器CPU使用百分比",
+      "identifier": "cpu_usage_percent",
+      "name": "CPU使用率"
+    },
+    {
+      "data_type": {
+        "specs": {
+          "max": 100.0,
+          "min": 0.0,
+          "unit": "%"
+        },
+        "type": "float"
+      },
+      "desc": "路由器CPU空闲百分比",
+      "identifier": "cpu_idle_percent",
+      "name": "CPU空闲率"
+    },
+    {
+      "data_type": {
+        "specs": {
+          "max": 100.0,
+          "min": 0.0,
+          "unit": "%"
+        },
+        "type": "float"
+      },
+      "desc": "路由器CPU用户态使用率",
+      "identifier": "cpu_user_percent",
+      "name": "CPU用户态使用率"
+    },
+    {
+      "data_type": {
+        "specs": {
+          "max": 100.0,
+          "min": 0.0,
+          "unit": "%"
+        },
+        "type": "float"
+      },
+      "desc": "路由器CPU系统态使用率",
+      "identifier": "cpu_system_percent",
+      "name": "CPU系统态使用率"
+    },
+    {
+      "data_type": {
+        "specs": {
+          "max": 2048.0,
+          "min": 0.0,
+          "unit": "MB"
+        },
+        "type": "double"
+      },
+      "desc": "路由器总内存容量",
+      "identifier": "memory_total_mb",
+      "name": "总内存"
+    },
+    {
+      "data_type": {
+        "specs": {
+          "max": 2048.0,
+          "min": 0.0,
+          "unit": "MB"
+        },
+        "type": "double"
+      },
+      "desc": "路由器已使用内存",
+      "identifier": "memory_used_mb",
+      "name": "已用内存"
+    },
+    {
+      "data_type": {
+        "specs": {
+          "max": 2048.0,
+          "min": 0.0,
+          "unit": "MB"
+        },
+        "type": "double"
+      },
+      "desc": "路由器可用内存",
+      "identifier": "memory_free_mb",
+      "name": "可用内存"
+    },
+    {
+      "data_type": {
+        "specs": {
+          "max": 100.0,
+          "min": 0.0,
+          "unit": "%"
+        },
+        "type": "float"
+      },
+      "desc": "路由器内存使用百分比",
+      "identifier": "memory_usage_percent",
+      "name": "内存使用率"
+    },
+    {
+      "data_type": {
+        "specs": {
+          "max": 100.0,
+          "min": 0.0,
+          "unit": "load"
+        },
+        "type": "float"
+      },
+      "desc": "路由器1分钟平均负载",
+      "identifier": "system_load1",
+      "name": "1分钟负载"
+    },
+    {
+      "data_type": {
+        "specs": {
+          "max": 100.0,
+          "min": 0.0,
+          "unit": "load"
+        },
+        "type": "float"
+      },
+      "desc": "路由器5分钟平均负载",
+      "identifier": "system_load5",
+      "name": "5分钟负载"
+    },
+    {
+      "data_type": {
+        "specs": {
+          "max": 100.0,
+          "min": 0.0,
+          "unit": "load"
+        },
+        "type": "float"
+      },
+      "desc": "路由器15分钟平均负载",
+      "identifier": "system_load15",
+      "name": "15分钟负载"
+    },
+    {
+      "data_type": {
+        "specs": {
+          "max": 1000,
+          "min": 0,
+          "unit": "个"
+        },
+        "type": "int32"
+      },
+      "desc": "路由器当前运行的进程总数",
+      "identifier": "total_processes",
+      "name": "总进程数"
+    },
+    {
+      "data_type": {
+        "specs": {
+          "max": 100.0,
+          "min": 0.0,
+          "unit": "%"
+        },
+        "type": "float"
+      },
+      "desc": "路由器存储使用百分比",
+      "identifier": "disk_used_percent",
+      "name": "存储使用率"
+    },
+    {
+      "data_type": {
+        "specs": {
+          "max": 1000,
+          "min": 0,
+          "unit": "个"
+        },
+        "type": "int32"
+      },
+      "desc": "DHCP分配的客户端设备数量",
+      "identifier": "dhcp_lease_count",
+      "name": "DHCP客户端数"
+    },
+    {
+      "data_type": {
+        "specs": {
+          "max": 65535,
+          "min": 0,
+          "unit": "个"
+        },
+        "type": "int32"
+      },
+      "desc": "防火墙连接跟踪表当前连接数",
+      "identifier": "conntrack_count",
+      "name": "连接跟踪数"
+    },
+    {
+      "data_type": {
+        "specs": {
+          "max": 100.0,
+          "min": -20.0,
+          "unit": "°C"
+        },
+        "type": "float"
+      },
+      "desc": "路由器芯片温度",
+      "identifier": "device_temperature",
+      "name": "设备温度"
+    },
+    {
+      "data_type": {
+        "specs": {
+          "max": 3.1536E7,
+          "min": 0.0,
+          "unit": "s"
+        },
+        "type": "int64"
+      },
+      "desc": "路由器系统运行时间",
+      "identifier": "system_uptime",
+      "name": "系统运行时间"
+    },
+    {
+      "data_type": {
+        "specs": {
+          "max": 1.0E15,
+          "min": 0.0,
+          "unit": "bytes"
+        },
+        "type": "int64"
+      },
+      "desc": "以太网接口接收字节总数",
+      "identifier": "net_eth0_rx_bytes",
+      "name": "eth0接收字节数"
+    },
+    {
+      "data_type": {
+        "specs": {
+          "max": 1.0E15,
+          "min": 0.0,
+          "unit": "bytes"
+        },
+        "type": "int64"
+      },
+      "desc": "以太网接口发送字节总数",
+      "identifier": "net_eth0_tx_bytes",
+      "name": "eth0发送字节数"
+    },
+    {
+      "data_type": {
+        "specs": {
+          "max": 1.0E12,
+          "min": 0.0,
+          "unit": "packets"
+        },
+        "type": "int64"
+      },
+      "desc": "以太网接口接收包总数",
+      "identifier": "net_eth0_rx_packets",
+      "name": "eth0接收包数"
+    },
+    {
+      "data_type": {
+        "specs": {
+          "max": 1.0E12,
+          "min": 0.0,
+          "unit": "packets"
+        },
+        "type": "int64"
+      },
+      "desc": "以太网接口发送包总数",
+      "identifier": "net_eth0_tx_packets",
+      "name": "eth0发送包数"
+    },
+    {
+      "data_type": {
+        "specs": {
+          "max": 1000000,
+          "min": 0,
+          "unit": "errors"
+        },
+        "type": "int64"
+      },
+      "desc": "以太网接口接收错误数",
+      "identifier": "net_eth0_rx_errors",
+      "name": "eth0接收错误数"
+    },
+    {
+      "data_type": {
+        "specs": {
+          "max": 1000000,
+          "min": 0,
+          "unit": "errors"
+        },
+        "type": "int64"
+      },
+      "desc": "以太网接口发送错误数",
+      "identifier": "net_eth0_tx_errors",
+      "name": "eth0发送错误数"
+    },
+    {
+      "data_type": {
+        "specs": {
+          "max": 1.0E15,
+          "min": 0.0,
+          "unit": "bytes"
+        },
+        "type": "int64"
+      },
+      "desc": "网桥接口接收字节总数",
+      "identifier": "net_br_lan_rx_bytes",
+      "name": "br-lan接收字节数"
+    },
+    {
+      "data_type": {
+        "specs": {
+          "max": 1.0E15,
+          "min": 0.0,
+          "unit": "bytes"
+        },
+        "type": "int64"
+      },
+      "desc": "网桥接口发送字节总数",
+      "identifier": "net_br_lan_tx_bytes",
+      "name": "br-lan发送字节数"
+    },
+    {
+      "data_type": {
+        "specs": {
+          "max": 1.0E12,
+          "min": 0.0,
+          "unit": "packets"
+        },
+        "type": "int64"
+      },
+      "desc": "网桥接口接收包总数",
+      "identifier": "net_br_lan_rx_packets",
+      "name": "br-lan接收包数"
+    },
+    {
+      "data_type": {
+        "specs": {
+          "max": 1.0E12,
+          "min": 0.0,
+          "unit": "packets"
+        },
+        "type": "int64"
+      },
+      "desc": "网桥接口发送包总数",
+      "identifier": "net_br_lan_tx_packets",
+      "name": "br-lan发送包数"
+    },
+    {
+      "data_type": {
+        "specs": {
+          "max": 1000000,
+          "min": 0,
+          "unit": "errors"
+        },
+        "type": "int64"
+      },
+      "desc": "网桥接口接收错误数",
+      "identifier": "net_br_lan_rx_errors",
+      "name": "br-lan接收错误数"
+    },
+    {
+      "data_type": {
+        "specs": {
+          "max": 1000000,
+          "min": 0,
+          "unit": "errors"
+        },
+        "type": "int64"
+      },
+      "desc": "网桥接口发送错误数",
+      "identifier": "net_br_lan_tx_errors",
+      "name": "br-lan发送错误数"
+    },
+    {
+      "data_type": {
+        "specs": {
+          "max": 1.0E15,
+          "min": 0.0,
+          "unit": "bytes"
+        },
+        "type": "int64"
+      },
+      "desc": "无线网络接口接收字节总数",
+      "identifier": "net_wlan0_rx_bytes",
+      "name": "wlan0接收字节数"
+    },
+    {
+      "data_type": {
+        "specs": {
+          "max": 1.0E15,
+          "min": 0.0,
+          "unit": "bytes"
+        },
+        "type": "int64"
+      },
+      "desc": "无线网络接口发送字节总数",
+      "identifier": "net_wlan0_tx_bytes",
+      "name": "wlan0发送字节数"
+    },
+    {
+      "data_type": {
+        "specs": {
+          "max": 1.0E12,
+          "min": 0.0,
+          "unit": "packets"
+        },
+        "type": "int64"
+      },
+      "desc": "无线网络接口接收包总数",
+      "identifier": "net_wlan0_rx_packets",
+      "name": "wlan0接收包数"
+    },
+    {
+      "data_type": {
+        "specs": {
+          "max": 1.0E12,
+          "min": 0.0,
+          "unit": "packets"
+        },
+        "type": "int64"
+      },
+      "desc": "无线网络接口发送包总数",
+      "identifier": "net_wlan0_tx_packets",
+      "name": "wlan0发送包数"
+    },
+    {
+      "data_type": {
+        "specs": {
+          "max": 1000000,
+          "min": 0,
+          "unit": "errors"
+        },
+        "type": "int64"
+      },
+      "desc": "无线网络接口接收错误数",
+      "identifier": "net_wlan0_rx_errors",
+      "name": "wlan0接收错误数"
+    },
+    {
+      "data_type": {
+        "specs": {
+          "max": 1000000,
+          "min": 0,
+          "unit": "errors"
+        },
+        "type": "int64"
+      },
+      "desc": "无线网络接口发送错误数",
+      "identifier": "net_wlan0_tx_errors",
+      "name": "wlan0发送错误数"
+    }
+  ]
+}

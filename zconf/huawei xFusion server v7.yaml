@@ -1,0 +1,2311 @@
+zabbix_export:
+  version: '6.0'
+  date: '2025-06-19T01:11:18Z'
+  groups:
+    - uuid: 4acea20ba1254054930e725442fccd0f
+      name: Templates
+  templates:
+    - uuid: 32334b04ea1e4cabadc1a97ded8e9902
+      template: 'Huawei xFusion Server v7'
+      name: 'Huawei xFusion Server v7'
+      description: |
+        创建人：王磊
+        创建时间：2025-06-17
+        修改时间：
+        适用型号：适配ibmc版本3.07.03.39，实测华为超聚变 8600v7
+        基于模板：
+        基于mib：2288HV6-16DIMM-iBMC_3.07.03.39_MIB（XFUSION-SERVER-iBMC-MIB.mib）
+      groups:
+        - name: Templates
+      items:
+        - uuid: 56581ef4daba42bdb327ccb7809bf332
+          name: 许可证到期时间
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.4.1.58132.2.235.1.1.31.1.14.0
+          key: certExpiration
+          history: 7d
+          value_type: FLOAT
+          description: 'Information about all power supply health status.'
+          preprocessing:
+            - type: JAVASCRIPT
+              parameters:
+                - |
+                  var split = value.split(' '),
+                      MONTHS_LIST = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+                      month_index = ('0' + (MONTHS_LIST.indexOf(split[0]) + 1)).slice(-2),
+                      ISOdate = split[2] + '-' + month_index + '-' + split[1] + 'T00:00:00',
+                      now = Date.now();
+                  return parseInt((Date.parse(ISOdate) - now) / 1000/60/60/24);
+          tags:
+            - tag: component
+              value: health
+          triggers:
+            - uuid: dd9a2632ea65456ba96cf29c943c9149
+              expression: 'last(/Huawei xFusion Server v7/certExpiration)<30'
+              name: '许可证还有 30 天到期'
+              priority: HIGH
+        - uuid: 2131000e06044766b5a8e3bb72ed8365
+          name: 'CPU 健康状态'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.4.1.58132.2.235.1.1.15.1.0
+          key: cpu.health
+          history: 7d
+          description: 'Information about all cpu health status.'
+          valuemap:
+            name: 'HUAWEI-SERVER-IBMC-MIB::entireStatus'
+          tags:
+            - tag: component
+              value: health
+          triggers:
+            - uuid: 61ba40b8ef1c4c369e32bce50c8873e7
+              expression: 'last(/Huawei xFusion Server v7/cpu.health)=2 or last(/Huawei xFusion Server v7/cpu.health)=3 or last(/Huawei xFusion Server v7/cpu.health)=4'
+              name: 'CPU 状态异常'
+              priority: HIGH
+        - uuid: 6ccfe847107747e38ed809755951a30d
+          name: 磁盘健康状态
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.4.1.58132.2.235.1.1.18.1.0
+          key: disk.health
+          history: 7d
+          description: 'Information about all hard disk health status.'
+          valuemap:
+            name: 'HUAWEI-SERVER-IBMC-MIB::entireStatus'
+          tags:
+            - tag: component
+              value: health
+          triggers:
+            - uuid: de9ae99eaf2540efbc275dc1a1d62b22
+              expression: 'last(/Huawei xFusion Server v7/disk.health)=2 or last(/Huawei xFusion Server v7/disk.health)=3 or last(/Huawei xFusion Server v7/disk.health)=4'
+              name: 磁盘健康状态异常
+              priority: HIGH
+        - uuid: b3928a547294452c9d760b4bf9b7971c
+          name: 风扇健康状态
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.4.1.58132.2.235.1.1.8.3.0
+          key: fan.health
+          history: 7d
+          description: 'Information about all fan health status.'
+          valuemap:
+            name: 'HUAWEI-SERVER-IBMC-MIB::entireStatus'
+          tags:
+            - tag: component
+              value: health
+          triggers:
+            - uuid: 81719f8aa763435dacabe2bf8b8c148d
+              expression: 'last(/Huawei xFusion Server v7/fan.health)=2 or last(/Huawei xFusion Server v7/fan.health)=3 or last(/Huawei xFusion Server v7/fan.health)=4'
+              name: 风扇健康状态异常
+              priority: HIGH
+        - uuid: 4915242bd78c40d7a6bc28f03ae3163c
+          name: 固件升级状态
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.4.1.58132.2.235.1.1.30.2.0
+          key: firmwareUpgradeState
+          history: 7d
+          value_type: FLOAT
+          preprocessing:
+            - type: DISCARD_UNCHANGED_HEARTBEAT
+              parameters:
+                - 1h
+          tags:
+            - tag: component
+              value: health
+          triggers:
+            - uuid: 9520bb76e5a144b09b9d5e07255ad6c3
+              expression: 'last(/Huawei xFusion Server v7/firmwareUpgradeState)<-9'
+              name: 固件升级失败
+              priority: DISASTER
+        - uuid: eccaf1ee286f480f87395c7415b3a714
+          name: 'PCle 设备健康状态'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.4.1.58132.2.235.1.1.24.1.0
+          key: huawei-server.pCIeDeviceEntireStatus
+          history: 7d
+          description: 'Information about all standard PCIe device health status.'
+          valuemap:
+            name: 'HUAWEI-SERVER-IBMC-MIB::entireStatus'
+          preprocessing:
+            - type: DISCARD_UNCHANGED_HEARTBEAT
+              parameters:
+                - 1h
+          tags:
+            - tag: component
+              value: health
+          triggers:
+            - uuid: 7f041a153acc4cbd872eb1ea1e916c49
+              expression: 'last(/Huawei xFusion Server v7/huawei-server.pCIeDeviceEntireStatus)=2 or last(/Huawei xFusion Server v7/huawei-server.pCIeDeviceEntireStatus)=3 or last(/Huawei xFusion Server v7/huawei-server.pCIeDeviceEntireStatus)=4'
+              name: 'PCle 设备健康状态异常'
+              priority: HIGH
+        - uuid: da0c47e4d0db45e09412581b2c51b797
+          name: 整体健康状态
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.4.1.58132.2.235.1.1.1.1.0
+          key: hwhealth
+          history: 7d
+          valuemap:
+            name: 'HUAWEI-SERVER-IBMC-MIB::entireStatus'
+          tags:
+            - tag: component
+              value: health
+          triggers:
+            - uuid: e5ace0dd98b14f86b1c9b68e9550180e
+              expression: 'last(/Huawei xFusion Server v7/hwhealth)=2 or last(/Huawei xFusion Server v7/hwhealth)=3 or last(/Huawei xFusion Server v7/hwhealth)=4'
+              name: 整体健康状态异常
+              priority: DISASTER
+        - uuid: 226116929c0f448f843456f810400350
+          name: 'ICMP Ping'
+          type: SIMPLE
+          key: icmpping
+          history: 7d
+          valuemap:
+            name: state
+          tags:
+            - tag: component
+              value: health
+            - tag: component
+              value: network
+          triggers:
+            - uuid: 576387078a124f52a1e63b18f1549c68
+              expression: 'max(/Huawei xFusion Server v7/icmpping,#3)=0'
+              name: 'ICMP Ping 不通'
+              priority: DISASTER
+              description: 'Last three attempts returned timeout.  Please check device connectivity.'
+              tags:
+                - tag: scope
+                  value: availability
+        - uuid: 678d3e26470f4b7fad4a82f21a596f3b
+          name: 'ICMP Ping 丢包率'
+          type: SIMPLE
+          key: icmppingloss
+          history: 7d
+          value_type: FLOAT
+          units: '%'
+          tags:
+            - tag: component
+              value: health
+            - tag: component
+              value: network
+          triggers:
+            - uuid: fd6862c90c354a0b9cae7077d6863c73
+              expression: 'min(/Huawei xFusion Server v7/icmppingloss,5m)>{$ICMP.LOSS.WARN} and min(/Huawei xFusion Server v7/icmppingloss,5m)<100'
+              name: 'ICMP Ping 丢包率持续 5 分钟大于 {$ICMP.LOSS.WARN}%'
+              priority: AVERAGE
+              dependencies:
+                - name: 'ICMP Ping 不通'
+                  expression: 'max(/Huawei xFusion Server v7/icmpping,#3)=0'
+              tags:
+                - tag: scope
+                  value: availability
+                - tag: scope
+                  value: performance
+        - uuid: f5d0c635a92145b284a98d1c3f9f37ac
+          name: 'ICMP Ping 延迟'
+          type: SIMPLE
+          key: icmppingsec
+          history: 7d
+          value_type: FLOAT
+          units: s
+          tags:
+            - tag: component
+              value: health
+            - tag: component
+              value: network
+          triggers:
+            - uuid: f38ab1a11274436baf419adabe0b854c
+              expression: 'avg(/Huawei xFusion Server v7/icmppingsec,5m)>{$ICMP.RESPONSE_TIME.WARN}'
+              name: 'ICMP Ping 5 分钟平均延迟大于 {$ICMP.RESPONSE_TIME.WARN} 秒'
+              priority: AVERAGE
+              dependencies:
+                - name: 'ICMP Ping 不通'
+                  expression: 'max(/Huawei xFusion Server v7/icmpping,#3)=0'
+                - name: 'ICMP Ping 丢包率持续 5 分钟大于 {$ICMP.LOSS.WARN}%'
+                  expression: 'min(/Huawei xFusion Server v7/icmppingloss,5m)>{$ICMP.LOSS.WARN} and min(/Huawei xFusion Server v7/icmppingloss,5m)<100'
+              tags:
+                - tag: scope
+                  value: availability
+                - tag: scope
+                  value: performance
+        - uuid: 9915479ccc8f4ff496a1550486b19ed0
+          name: 内存健康状态
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.4.1.58132.2.235.1.1.16.1.0
+          key: memhealth
+          history: 7d
+          description: 'Information about all memory health status.'
+          valuemap:
+            name: 'HUAWEI-SERVER-IBMC-MIB::entireStatus'
+          tags:
+            - tag: component
+              value: health
+          triggers:
+            - uuid: da55b64ef07d4fe0888155e0e5a5f167
+              expression: 'last(/Huawei xFusion Server v7/memhealth)=2 or last(/Huawei xFusion Server v7/memhealth)=3 or last(/Huawei xFusion Server v7/memhealth)=4'
+              name: 内存健康状态异常
+              priority: HIGH
+        - uuid: 14c1add574634645a0b5b6b9da693a25
+          name: 电源开启情况
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.4.1.58132.2.235.1.1.1.12.0
+          key: poweronstate
+          history: 7d
+          description: 该值是读写，唯一一个读写的。请提供只读团体名。
+          valuemap:
+            name: 'HUAWEI-SERVER-IBMC-MIB::systemPowerState'
+          tags:
+            - tag: component
+              value: health
+          triggers:
+            - uuid: e05b673564ba4b9491ab37b7ebe72318
+              expression: 'last(/Huawei xFusion Server v7/poweronstate)<>2'
+              name: 电源未开启
+              priority: DISASTER
+        - uuid: 8978b59fa39c4d368c16b4820cc1c096
+          name: 电源健康状态
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.4.1.58132.2.235.1.1.6.1.0
+          key: psuhealth
+          history: 7d
+          description: 'Information about all power supply health status.'
+          valuemap:
+            name: 'HUAWEI-SERVER-IBMC-MIB::entireStatus'
+          tags:
+            - tag: component
+              value: health
+          triggers:
+            - uuid: 7657eeb0044747218d32d970b94284f7
+              expression: 'last(/Huawei xFusion Server v7/psuhealth)=2 or last(/Huawei xFusion Server v7/psuhealth)=3 or last(/Huawei xFusion Server v7/psuhealth)=4'
+              name: 电源健康状态异常
+              priority: HIGH
+        - uuid: 45091cc8dc9542feb07a09189b97d8db
+          name: 系统联系人
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.2.1.1.4.0
+          key: system.contact
+          history: 7d
+          trends: '0'
+          value_type: CHAR
+          description: |
+            MIB: SNMPv2-MIB
+            The textual identification of the contact person for this managed node, together with information on how to contact this person.  If no contact information is known, the value is the zero-length string.
+          preprocessing:
+            - type: DISCARD_UNCHANGED_HEARTBEAT
+              parameters:
+                - 1h
+          tags:
+            - tag: component
+              value: system
+        - uuid: e227909a553c41f5a8de008032a74bb9
+          name: 'CPU 空闲率'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.4.1.2021.11.11.0
+          key: system.cpu.idle
+          history: 7d
+          units: '%'
+          description: 'MIB: UCD-SNMP-MIB'
+          tags:
+            - tag: component
+              value: memory
+        - uuid: 7d3e4374a19443eba6546a389b56aa6d
+          name: 'CPU 使用率'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.4.1.58132.2.235.1.1.1.23.0
+          key: system.cpu.util
+          history: 7d
+          value_type: FLOAT
+          units: '%'
+          description: |
+            MIB: HUAWEI-ENTITY-EXTENT-MIB
+            注：需要ibma才能获取该数据
+          tags:
+            - tag: component
+              value: cpu
+          triggers:
+            - uuid: 2446823298ff4d21867ad6a15990b052
+              expression: 'min(/Huawei xFusion Server v7/system.cpu.util,5m)>{$CPU.UTIL.CRIT}'
+              name: 'CPU 使用率持续 5 分钟大于 {$CPU.UTIL.CRIT}%'
+              priority: AVERAGE
+              tags:
+                - tag: scope
+                  value: performance
+        - uuid: 58a8c02c887346b1b37bf3da178a43b9
+          name: 系统描述
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.2.1.1.1.0
+          key: system.descr
+          history: 7d
+          trends: '0'
+          value_type: TEXT
+          description: |
+            MIB: SNMPv2-MIB
+            A textual description of the entity. This value should
+            include the full name and version identification of the system's hardware type, software operating-system, and
+            networking software.
+          preprocessing:
+            - type: DISCARD_UNCHANGED_HEARTBEAT
+              parameters:
+                - 1h
+          tags:
+            - tag: component
+              value: system
+        - uuid: e6a9a2ccc6fd4ad6a6f6b8ebb02f676a
+          name: 硬件设备名称
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.4.1.58132.2.235.1.1.1.6.0
+          key: system.devicename
+          history: 7d
+          trends: '0'
+          value_type: TEXT
+          description: 'The device name value between 1 to 63 characters.'
+          preprocessing:
+            - type: DISCARD_UNCHANGED_HEARTBEAT
+              parameters:
+                - 1h
+          tags:
+            - tag: component
+              value: system
+        - uuid: f0da79f2e37148dfa6f920f9cae69bdb
+          name: '硬件 SN'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.4.1.58132.2.235.1.1.1.7.0
+          key: system.hw.serialnumber
+          history: 7d
+          trends: '0'
+          value_type: TEXT
+          preprocessing:
+            - type: DISCARD_UNCHANGED_HEARTBEAT
+              parameters:
+                - 1h
+          tags:
+            - tag: component
+              value: system
+        - uuid: 9c83ecc266e84640b88011277e82e97b
+          name: 系统位置
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.2.1.1.6.0
+          key: system.location
+          history: 7d
+          trends: '0'
+          value_type: CHAR
+          description: |
+            MIB: SNMPv2-MIB
+            The physical location of this node (e.g., `telephone closet, 3rd floor').  If the location is unknown, the value is the zero-length string.
+          preprocessing:
+            - type: DISCARD_UNCHANGED_HEARTBEAT
+              parameters:
+                - 1h
+          tags:
+            - tag: component
+              value: system
+        - uuid: 8d72b68d93ba4604945c3827a79b8528
+          name: 系统名称
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.2.1.1.5.0
+          key: system.name
+          history: 7d
+          trends: '0'
+          value_type: CHAR
+          description: |
+            MIB: SNMPv2-MIB
+            An administratively-assigned name for this managed node.By convention, this is the node's fully-qualified domain name.  If the name is unknown, the value is the zero-length string.
+          preprocessing:
+            - type: DISCARD_UNCHANGED_HEARTBEAT
+              parameters:
+                - 1h
+          tags:
+            - tag: component
+              value: system
+          triggers:
+            - uuid: d06b9a2f0a9f4d12a70718102a2b5ee6
+              expression: 'last(/Huawei xFusion Server v7/system.name,#1)<>last(/Huawei xFusion Server v7/system.name,#2) and length(last(/Huawei xFusion Server v7/system.name))>0'
+              name: 系统名称发生变更
+              priority: INFO
+              tags:
+                - tag: scope
+                  value: notice
+                - tag: scope
+                  value: security
+        - uuid: 5d2d649b13044e2599245de5c21ed821
+          name: '系统 ObjectID'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.2.1.1.2.0
+          key: system.objectid
+          history: 7d
+          trends: '0'
+          value_type: CHAR
+          description: |
+            MIB: SNMPv2-MIB
+            The vendor's authoritative identification of the network management subsystem contained in the entity.  This value is allocated within the SMI enterprises subtree (1.3.6.1.4.1) and provides an easy and unambiguous means for determining`what kind of box' is being managed.  For example, if vendor`Flintstones, Inc.' was assigned the subtree1.3.6.1.4.1.4242, it could assign the identifier 1.3.6.1.4.1.4242.1.1 to its `Fred Router'.
+          preprocessing:
+            - type: DISCARD_UNCHANGED_HEARTBEAT
+              parameters:
+                - 1h
+          tags:
+            - tag: component
+              value: system
+        - uuid: 2781211b32a64bbeb18969d5eb0d129c
+          name: 系统总功耗
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.4.1.58132.2.235.1.1.20.4.0
+          key: system.power.consumption
+          history: 7d
+          value_type: FLOAT
+          units: Wh
+          description: |
+            Power consume from power statistic start time, unit is kWh.
+            实际取值感觉是wh，所以units更新为wh
+          preprocessing:
+            - type: MULTIPLIER
+              parameters:
+                - '1000'
+            - type: DISCARD_UNCHANGED_HEARTBEAT
+              parameters:
+                - 1h
+          tags:
+            - tag: Application
+              value: System
+        - uuid: d9b5d28d48974446b01ce7702b41d27e
+          name: 运行时长
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.2.1.1.3.0
+          key: system.uptime
+          history: 7d
+          trends: '0'
+          units: uptime
+          description: |
+            MIB: SNMPv2-MIB
+            The time (in hundredths of a second) since the network management portion of the system was last re-initialized.
+          preprocessing:
+            - type: MULTIPLIER
+              parameters:
+                - '0.01'
+          tags:
+            - tag: component
+              value: system
+          triggers:
+            - uuid: 8df3dd6499f44db29c525802e0730eec
+              expression: 'last(/Huawei xFusion Server v7/system.uptime)<10m'
+              name: 软件层面发生重启
+              priority: WARNING
+              description: 'Uptime is less than 10 minutes.'
+              dependencies:
+                - name: 'SNMP 不可用'
+                  expression: 'max(/Huawei xFusion Server v7/zabbix[host,snmp,available],5m)=0'
+              tags:
+                - tag: scope
+                  value: notice
+        - uuid: bdb755af61f34493a3a0d933819a3c68
+          name: 温度健康状态
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.4.1.58132.2.235.1.1.26.1.0
+          key: temphealth
+          history: 7d
+          description: 'Information about all temperature sensor health status.'
+          valuemap:
+            name: 'HUAWEI-SERVER-IBMC-MIB::entireStatus'
+          tags:
+            - tag: component
+              value: health
+          triggers:
+            - uuid: 4427b1ce3e9543ada0b203eb24790243
+              expression: 'last(/Huawei xFusion Server v7/temphealth)<>1'
+              name: 温度健康状态异常
+              priority: HIGH
+        - uuid: 96e7c83ef6c54c07a1cabbc242e16f19
+          name: 剩余内存大小
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.4.1.2021.4.6.0
+          key: vm.memory.free
+          history: 7d
+          units: B
+          description: 'MIB: UCD-SNMP-MIB'
+          preprocessing:
+            - type: MULTIPLIER
+              parameters:
+                - '1024'
+          tags:
+            - tag: component
+              value: memory
+        - uuid: 9be02e46609c44f3992d231ec68b13e3
+          name: 总内存大小
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.4.1.2021.4.5.0
+          key: vm.memory.total
+          history: 7d
+          units: B
+          description: |
+            MIB: UCD-SNMP-MIB
+            Total memory in Bytes.
+          preprocessing:
+            - type: MULTIPLIER
+              parameters:
+                - '1024'
+          tags:
+            - tag: component
+              value: memory
+        - uuid: c2c801f04ec3408aa39dbb42afab2cec
+          name: 内存使用率
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.4.1.58132.2.235.1.1.1.25.0
+          key: vm.memory.util
+          history: 7d
+          value_type: FLOAT
+          units: '%'
+          description: |
+            MIB: HUAWEI-ENTITY-EXTENT-MIB
+            注：需要ibma才能获取该数据
+          tags:
+            - tag: component
+              value: memory
+          triggers:
+            - uuid: fe8b46de07954e3e938a184a03295dfe
+              expression: 'min(/Huawei xFusion Server v7/vm.memory.util,5m)>{$MEMORY.UTIL.CRIT}'
+              name: '内存使用率持续 5 分钟大于 {$MEMORY.UTIL.CRIT}%'
+              priority: AVERAGE
+              description: 'Memory utilization is too high. The system might be slow to respond.'
+              tags:
+                - tag: scope
+                  value: performance
+        - uuid: dbd63468e15742c4afe3c0166f52de84
+          name: 'SNMP 可用性'
+          type: INTERNAL
+          key: 'zabbix[host,snmp,available]'
+          history: 7d
+          description: |
+            Availability of SNMP checks on the host. The value of this item corresponds to availability icons in the host list.
+            Possible value:
+            0 - not available
+            1 - available
+            2 - unknown
+          valuemap:
+            name: available
+          tags:
+            - tag: component
+              value: health
+            - tag: component
+              value: network
+          triggers:
+            - uuid: a6b61397d7834a1cb2f944a602892910
+              expression: 'max(/Huawei xFusion Server v7/zabbix[host,snmp,available],5m)=0'
+              name: 'SNMP 不可用'
+              priority: HIGH
+              description: 'SNMP 协议端口不可达，请检查设备的网络连接和设备上的 SNMP 设置'
+              dependencies:
+                - name: 'ICMP Ping 不通'
+                  expression: 'max(/Huawei xFusion Server v7/icmpping,#3)=0'
+              tags:
+                - tag: scope
+                  value: availability
+      discovery_rules:
+        - uuid: 439715fcf6a5445ab1db06af52c1bd50
+          name: 'CPU 自动发现'
+          type: SNMP_AGENT
+          snmp_oid: 'discovery[{#SNMPVALUE},1.3.6.1.4.1.58132.2.235.1.1.15.50.1.1,{#CPUNAME},1.3.6.1.4.1.58132.2.235.1.1.15.50.1.10]'
+          key: cpu.discovery
+          delay: 5m
+          lifetime: 3h
+          description: 'Information about CPU index.'
+          item_prototypes:
+            - uuid: ac9c97bd5bbc427ba0b1225e8a51a92a
+              name: 'CPU{#CPUNAME}: 厂商'
+              type: SNMP_AGENT
+              snmp_oid: '1.3.6.1.4.1.58132.2.235.1.1.15.50.1.2.{#SNMPINDEX}'
+              key: 'cpu.manufacturer[{#SNMPINDEX}]'
+              history: 7d
+              trends: '0'
+              status: DISABLED
+              discover: NO_DISCOVER
+              value_type: CHAR
+              preprocessing:
+                - type: DISCARD_UNCHANGED_HEARTBEAT
+                  parameters:
+                    - 1h
+              tags:
+                - tag: component
+                  value: cpu
+            - uuid: 106fdaa69f674250a5b3e62b73b856f1
+              name: 'CPU{#CPUNAME}: 状态'
+              type: SNMP_AGENT
+              snmp_oid: '1.3.6.1.4.1.58132.2.235.1.1.15.50.1.6.{#SNMPINDEX}'
+              key: 'cpu.status[{#SNMPINDEX}]'
+              history: 7d
+              description: 'Information about CPU health status.'
+              valuemap:
+                name: 'HUAWEI-SERVER-IBMC-MIB::entireStatus'
+              tags:
+                - tag: component
+                  value: cpu
+                - tag: component
+                  value: health
+              trigger_prototypes:
+                - uuid: 656cf207d8d642a9817ebd2123d0b228
+                  expression: 'last(/Huawei xFusion Server v7/cpu.status[{#SNMPINDEX}])=4'
+                  name: 'CPU {#SNMPINDEX}: 处于严重告警状态'
+                  priority: DISASTER
+                - uuid: f8864c1c8866475bb0d0fc8124edc898
+                  expression: 'last(/Huawei xFusion Server v7/cpu.status[{#SNMPINDEX}])=3'
+                  name: 'CPU {#SNMPINDEX}: 处于主要告警状态'
+                  priority: HIGH
+                - uuid: c9f13208c9e44b95ad71b3c083772cd4
+                  expression: 'last(/Huawei xFusion Server v7/cpu.status[{#SNMPINDEX}])=2'
+                  name: 'CPU {#SNMPINDEX}: 处于次要告警状态'
+                  priority: WARNING
+          preprocessing:
+            - type: DISCARD_UNCHANGED_HEARTBEAT
+              parameters:
+                - 1h
+        - uuid: 79cb31f9aeda4e09bd972122af6400c1
+          name: 磁盘阵列自动发现
+          type: SNMP_AGENT
+          snmp_oid: 'discovery[{#SNMPVALUE},1.3.6.1.4.1.58132.2.235.1.1.36.50.1.1,{#DEVICENAME},1.3.6.1.4.1.58132.2.235.1.1.36.50.1.4]'
+          key: diskarray.discovery
+          delay: 5m
+          lifetime: 3h
+          description: 'Information about RAID controller index.'
+          item_prototypes:
+            - uuid: 8b69fe6169a946438dc73d2b92899f76
+              name: '磁盘阵列{#DEVICENAME}: BBU 状态'
+              type: SNMP_AGENT
+              snmp_oid: '1.3.6.1.4.1.58132.2.235.1.1.36.50.1.18.{#SNMPINDEX}'
+              key: 'diskarray.bbu.status[{#SNMPINDEX}]'
+              history: 7d
+              status: DISABLED
+              discover: NO_DISCOVER
+              description: |
+                Information about RAID controller's BBU health status.
+                				bit0: 1 - voltage is low
+                				bit1: 1 - need replace pack
+                				bit2: 1 - learn cycle failed
+                				bit3: 1 - learn cycle timeout
+                				bit4: 1 - pack is about to fail
+                				bit5: 1 - remaining capacity low
+                				bit6: 1 - no space for cache offload
+                				others: reserved
+              valuemap:
+                name: 'HUAWEI-SERVER-IBMC-MIB::unknown'
+              tags:
+                - tag: component
+                  value: controller
+                - tag: component
+                  value: health
+              trigger_prototypes:
+                - uuid: 7161f034ddf24d819812c317584595de
+                  expression: 'last(/Huawei xFusion Server v7/diskarray.bbu.status[{#SNMPINDEX}])<>0'
+                  name: '控制器 {#SNMPINDEX}: BBU 健康状态异常'
+                  priority: HIGH
+                  dependencies:
+                    - name: 电源未开启
+                      expression: 'last(/Huawei xFusion Server v7/poweronstate)<>2'
+            - uuid: cc614228e2b247c184655bb7b58d99b7
+              name: '磁盘阵列{#DEVICENAME}: 状态'
+              type: SNMP_AGENT
+              snmp_oid: '1.3.6.1.4.1.58132.2.235.1.1.36.50.1.7.{#SNMPINDEX}'
+              key: 'diskarray.status[{#SNMPINDEX}]'
+              history: 7d
+              description: |
+                Information about RAID controller health status.
+                				bit0: 1- memory correctable error
+                				bit1: 1- memory uncorrectable error
+                				bit2: 1- memory ECC error reached limit
+                				bit3: 1- NVRAM uncorrectable error
+                				other: reserved
+              valuemap:
+                name: 'HUAWEI-SERVER-IBMC-MIB::unknown'
+              tags:
+                - tag: component
+                  value: controller
+                - tag: component
+                  value: health
+              trigger_prototypes:
+                - uuid: 83da0175ba4a4702824aef12fb9fd67c
+                  expression: 'last(/Huawei xFusion Server v7/diskarray.status[{#SNMPINDEX}])<>0'
+                  name: '控制器 {#SNMPINDEX}: 健康状态异常'
+                  priority: HIGH
+                  dependencies:
+                    - name: 电源未开启
+                      expression: 'last(/Huawei xFusion Server v7/poweronstate)<>2'
+          preprocessing:
+            - type: DISCARD_UNCHANGED_HEARTBEAT
+              parameters:
+                - 1h
+        - uuid: 2a33d9110684452aa71b52ae4c45f43f
+          name: 内存自动发现
+          type: SNMP_AGENT
+          snmp_oid: 'discovery[{#SNMPVALUE},1.3.6.1.4.1.58132.2.235.1.1.16.50.1.1,{#MEMNAME},1.3.6.1.4.1.58132.2.235.1.1.16.50.1.10,{#MEMTYPE},1.3.6.1.4.1.58132.2.235.1.1.16.50.1.11,{#MEMSTATUS},.1.3.6.1.4.1.58132.2.235.1.1.16.50.1.6]'
+          key: memory.discovery
+          delay: 5m
+          filter:
+            evaltype: AND
+            conditions:
+              - macro: '{#MEMNAME}'
+                value: '{$MEMORY.NAME.MATCHES}'
+                formulaid: A
+              - macro: '{#MEMNAME}'
+                value: '{$MEMORY.NAME.NOT_MATCHES}'
+                operator: NOT_MATCHES_REGEX
+                formulaid: B
+              - macro: '{#MEMTYPE}'
+                value: '{$MEMORY.TYPE.MATCHES}'
+                formulaid: C
+              - macro: '{#MEMTYPE}'
+                value: '{$MEMORY.TYPE.NOT_MATCHES}'
+                operator: NOT_MATCHES_REGEX
+                formulaid: D
+          lifetime: 3h
+          description: 'Information about memory DIMM index.'
+          item_prototypes:
+            - uuid: ebbe81fa828a4b67be9ec8701521d134
+              name: '内存{#MEMNAME}: 厂商'
+              type: SNMP_AGENT
+              snmp_oid: '1.3.6.1.4.1.58132.2.235.1.1.16.50.1.3.{#SNMPINDEX}'
+              key: 'memory.manufacturer[{#SNMPINDEX}]'
+              history: 7d
+              trends: '0'
+              status: DISABLED
+              discover: NO_DISCOVER
+              value_type: CHAR
+              preprocessing:
+                - type: DISCARD_UNCHANGED_HEARTBEAT
+                  parameters:
+                    - 1h
+              tags:
+                - tag: component
+                  value: memory
+            - uuid: 2fbc55df8e784853a63e6ed0cb7189b5
+              name: '内存{#MEMNAME}: SN'
+              type: SNMP_AGENT
+              snmp_oid: '1.3.6.1.4.1.58132.2.235.1.1.16.50.1.12.{#SNMPINDEX}'
+              key: 'memory.serialnumber[{#SNMPINDEX}]'
+              history: 7d
+              trends: '0'
+              status: DISABLED
+              discover: NO_DISCOVER
+              value_type: CHAR
+              preprocessing:
+                - type: DISCARD_UNCHANGED_HEARTBEAT
+                  parameters:
+                    - 1h
+              tags:
+                - tag: component
+                  value: memory
+            - uuid: ba740c366ea74183a9c4af6ff5f49c7d
+              name: '内存{#MEMNAME}: 容量'
+              type: SNMP_AGENT
+              snmp_oid: '1.3.6.1.4.1.58132.2.235.1.1.16.50.1.4.{#SNMPINDEX}'
+              key: 'memory.size[{#SNMPINDEX}]'
+              history: 7d
+              units: B
+              description: 'Information about memory capacity.'
+              preprocessing:
+                - type: DISCARD_UNCHANGED_HEARTBEAT
+                  parameters:
+                    - 1h
+                - type: REGEX
+                  parameters:
+                    - '(\D*)(\d+)'
+                    - \2
+                - type: MULTIPLIER
+                  parameters:
+                    - '1048576'
+              tags:
+                - tag: component
+                  value: memory
+            - uuid: 1177e32d289444b5a98a7a0c44aaaef1
+              name: '内存{#MEMNAME}: 状态'
+              type: SNMP_AGENT
+              snmp_oid: '1.3.6.1.4.1.58132.2.235.1.1.16.50.1.6.{#SNMPINDEX}'
+              key: 'memory.status[{#SNMPINDEX}]'
+              history: 7d
+              description: 'Information about memory health status.'
+              valuemap:
+                name: 'HUAWEI-SERVER-IBMC-MIB::entireStatus'
+              tags:
+                - tag: component
+                  value: memory
+              trigger_prototypes:
+                - uuid: 0d44fe98d5a84769bc037f01dd83a8b9
+                  expression: 'last(/Huawei xFusion Server v7/memory.status[{#SNMPINDEX}])=4'
+                  name: '内存 {#SNMPINDEX}: 处于严重告警状态'
+                  priority: DISASTER
+                - uuid: f3003cea38d04037972377e5f21c702e
+                  expression: 'last(/Huawei xFusion Server v7/memory.status[{#SNMPINDEX}])=3'
+                  name: '内存 {#SNMPINDEX}: 处于主要告警状态'
+                  priority: HIGH
+                - uuid: 6ba0fe8325eb4567b1b80b8db2f17412
+                  expression: 'last(/Huawei xFusion Server v7/memory.status[{#SNMPINDEX}])=2'
+                  name: '内存 {#SNMPINDEX}: 处于次要告警状态'
+                  priority: WARNING
+          preprocessing:
+            - type: DISCARD_UNCHANGED_HEARTBEAT
+              parameters:
+                - 1h
+        - uuid: 8589c9512cd842b998c3c2778512319f
+          name: 'MEZZ 扩展卡自动发现'
+          type: SNMP_AGENT
+          snmp_oid: 'discovery[{#DEVICENAME},.1.3.6.1.4.1.58132.2.235.1.1.10.50.1.1]'
+          key: mezz.discovery
+          delay: 5m
+          status: DISABLED
+          lifetime: 3h
+          item_prototypes:
+            - uuid: 71b8276e7cf34a4c9d9f465cec8eaed8
+              name: 'MEZZ 扩展卡{#DEVICENAME}: 状态'
+              type: SNMP_AGENT
+              snmp_oid: '1.3.6.1.4.1.58132.2.235.1.1.10.50.1.5.{#SNMPINDEX}'
+              key: 'mezz.health[{#SNMPINDEX}]'
+              history: 7d
+              description: 'information about board health status.'
+              tags:
+                - tag: component
+                  value: health
+              trigger_prototypes:
+                - uuid: 3b9ce6a0f2aa4e6f9657e8084b13513d
+                  expression: 'last(/Huawei xFusion Server v7/mezz.health[{#SNMPINDEX}])<>1'
+                  name: 'MEZZ 扩展卡 {#SNMPINDEX}: 健康状态异常'
+                  priority: HIGH
+          preprocessing:
+            - type: DISCARD_UNCHANGED_HEARTBEAT
+              parameters:
+                - 1h
+        - uuid: 201b636010884144a29e2a0aa3887757
+          name: 网口自动发现
+          type: SNMP_AGENT
+          snmp_oid: 'discovery[{#IFOPERSTATUS},1.3.6.1.2.1.2.2.1.8,{#IFADMINSTATUS},1.3.6.1.2.1.2.2.1.7,{#IFNAME},1.3.6.1.2.1.31.1.1.1.1,{#IFTYPE},1.3.6.1.2.1.2.2.1.3]'
+          key: net.if.discovery
+          delay: 5m
+          filter:
+            evaltype: AND
+            conditions:
+              - macro: '{#IFADMINSTATUS}'
+                value: '{$NET.IFADMINSTATUS.MATCHES}'
+                formulaid: A
+              - macro: '{#IFADMINSTATUS}'
+                value: '{$NET.IFADMINSTATUS.NOT_MATCHES}'
+                operator: NOT_MATCHES_REGEX
+                formulaid: B
+              - macro: '{#IFNAME}'
+                value: '{$NET.IFNAME.MATCHES}'
+                formulaid: C
+              - macro: '{#IFNAME}'
+                value: '{$NET.IFNAME.NOT_MATCHES}'
+                operator: NOT_MATCHES_REGEX
+                formulaid: D
+              - macro: '{#IFOPERSTATUS}'
+                value: '{$NET.IFOPERSTATUS.MATCHES}'
+                formulaid: E
+              - macro: '{#IFOPERSTATUS}'
+                value: '{$NET.IFOPERSTATUS.NOT_MATCHES}'
+                operator: NOT_MATCHES_REGEX
+                formulaid: F
+              - macro: '{#IFTYPE}'
+                value: '{$NET.IFTYPE.MATCHES}'
+                formulaid: G
+              - macro: '{#IFTYPE}'
+                value: '{$NET.IFTYPE.NOT_MATCHES}'
+                operator: NOT_MATCHES_REGEX
+                formulaid: H
+          lifetime: 3h
+          item_prototypes:
+            - uuid: 3662815302c74fb08cf1eef6fb6201d4
+              name: '网口 {#IFNAME}: 入流量'
+              type: SNMP_AGENT
+              snmp_oid: '1.3.6.1.2.1.31.1.1.1.6.{#SNMPINDEX}'
+              key: 'net.if.in[ifHCInOctets.{#SNMPINDEX}]'
+              history: 7d
+              units: bps
+              preprocessing:
+                - type: CHANGE_PER_SECOND
+                  parameters:
+                    - ''
+                - type: MULTIPLIER
+                  parameters:
+                    - '8'
+              tags:
+                - tag: component
+                  value: network
+                - tag: interface
+                  value: '{#IFNAME}'
+            - uuid: 2c77c8db65be4f8eb8acf5f67472d8e8
+              name: '网口 {#IFNAME}: 出流量'
+              type: SNMP_AGENT
+              snmp_oid: '1.3.6.1.2.1.31.1.1.1.10.{#SNMPINDEX}'
+              key: 'net.if.out[ifHCOutOctets.{#SNMPINDEX}]'
+              history: 7d
+              units: bps
+              preprocessing:
+                - type: CHANGE_PER_SECOND
+                  parameters:
+                    - ''
+                - type: MULTIPLIER
+                  parameters:
+                    - '8'
+              tags:
+                - tag: component
+                  value: network
+                - tag: interface
+                  value: '{#IFNAME}'
+            - uuid: 15b93b27523b44e0b05f1827b24a4a48
+              name: '网口 {#IFNAME}: 速率'
+              type: SNMP_AGENT
+              snmp_oid: '1.3.6.1.2.1.31.1.1.1.15.{#SNMPINDEX}'
+              key: 'net.if.speed[ifHighSpeed.{#SNMPINDEX}]'
+              history: 7d
+              units: bps
+              preprocessing:
+                - type: DISCARD_UNCHANGED_HEARTBEAT
+                  parameters:
+                    - 1h
+                - type: MULTIPLIER
+                  parameters:
+                    - '1000000'
+              tags:
+                - tag: component
+                  value: network
+                - tag: interface
+                  value: '{#IFNAME}'
+            - uuid: de51d1fc66ca4b31b4960cc25fc68918
+              name: '网口 {#IFNAME}: 状态'
+              type: SNMP_AGENT
+              snmp_oid: '1.3.6.1.2.1.2.2.1.8.{#SNMPINDEX}'
+              key: 'net.if.status[ifOperStatus.{#SNMPINDEX}]'
+              history: 7d
+              valuemap:
+                name: ifOperStatus
+              tags:
+                - tag: component
+                  value: network
+                - tag: interface
+                  value: '{#IFNAME}'
+              trigger_prototypes:
+                - uuid: 884d949bd69e4cd8830e5fe85bde250f
+                  expression: '{$NET.IFCONTROL:"{#IFNAME}"}=1 and last(/Huawei xFusion Server v7/net.if.status[ifOperStatus.{#SNMPINDEX}])=2 and (last(/Huawei xFusion Server v7/net.if.status[ifOperStatus.{#SNMPINDEX}],#1)<>last(/Huawei xFusion Server v7/net.if.status[ifOperStatus.{#SNMPINDEX}],#2))'
+                  recovery_mode: RECOVERY_EXPRESSION
+                  recovery_expression: 'last(/Huawei xFusion Server v7/net.if.status[ifOperStatus.{#SNMPINDEX}])<>2 or {$NET.IFCONTROL:"{#IFNAME}"}=0'
+                  name: '网口 {#IFNAME}: 状态异常'
+                  priority: HIGH
+                  tags:
+                    - tag: scope
+                      value: availability
+            - uuid: d34f4878d2c641fdb2ee7a8320cab57f
+              name: '网口 {#IFNAME}: 类型'
+              type: SNMP_AGENT
+              snmp_oid: '1.3.6.1.2.1.2.2.1.3.{#SNMPINDEX}'
+              key: 'net.if.type[ifType.{#SNMPINDEX}]'
+              history: 7d
+              valuemap:
+                name: ifType
+              preprocessing:
+                - type: DISCARD_UNCHANGED_HEARTBEAT
+                  parameters:
+                    - 1h
+              tags:
+                - tag: component
+                  value: network
+                - tag: interface
+                  value: '{#IFNAME}'
+          trigger_prototypes:
+            - uuid: c5a611a1a3614bd59c438253fde16a3e
+              expression: |
+                change(/Huawei xFusion Server v7/net.if.speed[ifHighSpeed.{#SNMPINDEX}])<0 and last(/Huawei xFusion Server v7/net.if.speed[ifHighSpeed.{#SNMPINDEX}])>0
+                and (
+                last(/Huawei xFusion Server v7/net.if.type[ifType.{#SNMPINDEX}])=6 or
+                last(/Huawei xFusion Server v7/net.if.type[ifType.{#SNMPINDEX}])=7 or
+                last(/Huawei xFusion Server v7/net.if.type[ifType.{#SNMPINDEX}])=11 or
+                last(/Huawei xFusion Server v7/net.if.type[ifType.{#SNMPINDEX}])=62 or
+                last(/Huawei xFusion Server v7/net.if.type[ifType.{#SNMPINDEX}])=69 or
+                last(/Huawei xFusion Server v7/net.if.type[ifType.{#SNMPINDEX}])=117
+                )
+                and
+                (last(/Huawei xFusion Server v7/net.if.status[ifOperStatus.{#SNMPINDEX}])<>2)
+              recovery_mode: RECOVERY_EXPRESSION
+              recovery_expression: |
+                (change(/Huawei xFusion Server v7/net.if.speed[ifHighSpeed.{#SNMPINDEX}])>0 and last(/Huawei xFusion Server v7/net.if.speed[ifHighSpeed.{#SNMPINDEX}],#2)>0) or
+                (last(/Huawei xFusion Server v7/net.if.status[ifOperStatus.{#SNMPINDEX}])=2)
+              name: '网口 {#IFNAME}: 处于低速率模式'
+              priority: WARNING
+              dependencies:
+                - name: '网口 {#IFNAME}: 状态异常'
+                  expression: '{$NET.IFCONTROL:"{#IFNAME}"}=1 and last(/Huawei xFusion Server v7/net.if.status[ifOperStatus.{#SNMPINDEX}])=2 and (last(/Huawei xFusion Server v7/net.if.status[ifOperStatus.{#SNMPINDEX}],#1)<>last(/Huawei xFusion Server v7/net.if.status[ifOperStatus.{#SNMPINDEX}],#2))'
+                  recovery_expression: 'last(/Huawei xFusion Server v7/net.if.status[ifOperStatus.{#SNMPINDEX}])<>2 or {$NET.IFCONTROL:"{#IFNAME}"}=0'
+              tags:
+                - tag: scope
+                  value: performance
+            - uuid: e0554229091e45c998df93f363304b6a
+              expression: |
+                (avg(/Huawei xFusion Server v7/net.if.in[ifHCInOctets.{#SNMPINDEX}],15m)>({$NET.IF.UTIL.CRIT:"{#IFNAME}"}/100)*last(/Huawei xFusion Server v7/net.if.speed[ifHighSpeed.{#SNMPINDEX}]) or
+                avg(/Huawei xFusion Server v7/net.if.out[ifHCOutOctets.{#SNMPINDEX}],15m)>({$NET.IF.UTIL.CRIT:"{#IFNAME}"}/100)*last(/Huawei xFusion Server v7/net.if.speed[ifHighSpeed.{#SNMPINDEX}])) and
+                last(/Huawei xFusion Server v7/net.if.speed[ifHighSpeed.{#SNMPINDEX}])>0
+              recovery_mode: RECOVERY_EXPRESSION
+              recovery_expression: |
+                avg(/Huawei xFusion Server v7/net.if.in[ifHCInOctets.{#SNMPINDEX}],15m)<(({$NET.IF.UTIL.CRIT:"{#IFNAME}"}-3)/100)*last(/Huawei xFusion Server v7/net.if.speed[ifHighSpeed.{#SNMPINDEX}]) and
+                avg(/Huawei xFusion Server v7/net.if.out[ifHCOutOctets.{#SNMPINDEX}],15m)<(({$NET.IF.UTIL.CRIT:"{#IFNAME}"}-3)/100)*last(/Huawei xFusion Server v7/net.if.speed[ifHighSpeed.{#SNMPINDEX}])
+              name: '网口 {#IFNAME}: 带宽使用率持续 15 分钟大于 {$NET.IF.UTIL.CRIT:"{#IFNAME}"}%'
+              priority: HIGH
+              dependencies:
+                - name: '网口 {#IFNAME}: 状态异常'
+                  expression: '{$NET.IFCONTROL:"{#IFNAME}"}=1 and last(/Huawei xFusion Server v7/net.if.status[ifOperStatus.{#SNMPINDEX}])=2 and (last(/Huawei xFusion Server v7/net.if.status[ifOperStatus.{#SNMPINDEX}],#1)<>last(/Huawei xFusion Server v7/net.if.status[ifOperStatus.{#SNMPINDEX}],#2))'
+                  recovery_expression: 'last(/Huawei xFusion Server v7/net.if.status[ifOperStatus.{#SNMPINDEX}])<>2 or {$NET.IFCONTROL:"{#IFNAME}"}=0'
+              tags:
+                - tag: scope
+                  value: performance
+          preprocessing:
+            - type: DISCARD_UNCHANGED_HEARTBEAT
+              parameters:
+                - 1h
+        - uuid: 21f8b93d989d4f56a25ec49c71d7cd00
+          name: 物理磁盘自动发现
+          type: SNMP_AGENT
+          snmp_oid: 'discovery[{#SNMPVALUE},1.3.6.1.4.1.58132.2.235.1.1.18.50.1.1,{#DEVICENAME},1.3.6.1.4.1.58132.2.235.1.1.18.50.1.6]'
+          key: physicaldisk.discovery
+          delay: 5m
+          filter:
+            conditions:
+              - macro: '{#DEVICENAME}'
+                value: ^$
+                operator: NOT_MATCHES_REGEX
+                formulaid: A
+          lifetime: 3h
+          description: 'Information about hard disk index.'
+          item_prototypes:
+            - uuid: 47043ff38daa48c1a63aa3dff3ca9510
+              name: '物理磁盘{#DEVICENAME}: 厂商'
+              type: SNMP_AGENT
+              snmp_oid: '1.3.6.1.4.1.58132.2.235.1.1.18.50.1.9.{#SNMPINDEX}'
+              key: 'physicaldisk.manufacturer[{#SNMPINDEX}]'
+              history: 7d
+              trends: '0'
+              status: DISABLED
+              discover: NO_DISCOVER
+              value_type: CHAR
+              preprocessing:
+                - type: DISCARD_UNCHANGED_HEARTBEAT
+                  parameters:
+                    - 1h
+              tags:
+                - tag: component
+                  value: disk
+            - uuid: 1a552a8e42a044e39c4dd4524e97e15a
+              name: '物理磁盘{#DEVICENAME}: SN'
+              type: SNMP_AGENT
+              snmp_oid: '1.3.6.1.4.1.58132.2.235.1.1.18.50.1.7.{#SNMPINDEX}'
+              key: 'physicaldisk.serialnumber[{#SNMPINDEX}]'
+              history: 7d
+              trends: '0'
+              status: DISABLED
+              discover: NO_DISCOVER
+              value_type: CHAR
+              preprocessing:
+                - type: DISCARD_UNCHANGED_HEARTBEAT
+                  parameters:
+                    - 1h
+              tags:
+                - tag: component
+                  value: disk
+            - uuid: 6224c469ee3d42dda6b8d4caaa1ad352
+              name: '物理磁盘{#DEVICENAME}: 容量'
+              type: SNMP_AGENT
+              snmp_oid: '1.3.6.1.4.1.58132.2.235.1.1.18.50.1.12.{#SNMPINDEX}'
+              key: 'physicaldisk.size[{#SNMPINDEX}]'
+              history: 7d
+              units: B
+              preprocessing:
+                - type: DISCARD_UNCHANGED_HEARTBEAT
+                  parameters:
+                    - 1h
+                - type: MULTIPLIER
+                  parameters:
+                    - '1073741824'
+              tags:
+                - tag: component
+                  value: physicaldisk
+            - uuid: 6b5b32522aa34d03a605a1b4b8b5729d
+              name: '物理磁盘{#DEVICENAME}: 状态'
+              type: SNMP_AGENT
+              snmp_oid: '1.3.6.1.4.1.58132.2.235.1.1.18.50.1.3.{#SNMPINDEX}'
+              key: 'physicaldisk.status[{#SNMPINDEX}]'
+              history: 7d
+              description: 'Information about hard disk health.'
+              valuemap:
+                name: 'HUAWEI-SERVER-IBMC-MIB::entireStatus'
+              tags:
+                - tag: component
+                  value: physicaldisk
+              trigger_prototypes:
+                - uuid: 0d7e0bc636534592b295516a458d4f8a
+                  expression: 'last(/Huawei xFusion Server v7/physicaldisk.status[{#SNMPINDEX}])=4'
+                  name: '物理磁盘 {#SNMPINDEX}: 处于严重警告状态'
+                  priority: DISASTER
+                - uuid: d4fb4bcfdb3f45f4a02401db976ec007
+                  expression: 'last(/Huawei xFusion Server v7/physicaldisk.status[{#SNMPINDEX}])=3'
+                  name: '物理磁盘 {#SNMPINDEX}: 处于主要警告状态'
+                  priority: HIGH
+                - uuid: ada203ea037e4f5f8805982697eb5f79
+                  expression: 'last(/Huawei xFusion Server v7/physicaldisk.status[{#SNMPINDEX}])=2'
+                  name: '物理磁盘 {#SNMPINDEX}: 处于次要警告状态'
+                  priority: WARNING
+          preprocessing:
+            - type: DISCARD_UNCHANGED_HEARTBEAT
+              parameters:
+                - 1h
+        - uuid: 6b917a6f8d434e8e975fa676fcafab6d
+          name: 风扇自动发现
+          type: SNMP_AGENT
+          snmp_oid: 'discovery[{#DEVICENAME},1.3.6.1.4.1.58132.2.235.1.1.8.50.1.7]'
+          key: sensor.fan.discovery
+          delay: 5m
+          lifetime: 3h
+          description: 'Fan index.'
+          item_prototypes:
+            - uuid: fe68b994d41548a99da15d5463e93167
+              name: '风扇{#DEVICENAME}: 转速'
+              type: SNMP_AGENT
+              snmp_oid: '1.3.6.1.4.1.58132.2.235.1.1.8.50.1.2.{#SNMPINDEX}'
+              key: 'sensor.fan.speed[{#SNMPINDEX}]'
+              history: 7d
+              units: rpm
+              description: 'Fan speed ratio.'
+              tags:
+                - tag: component
+                  value: fan
+            - uuid: 437e7aea1e7c44c28406a6f6a78a1ea8
+              name: '风扇{#DEVICENAME}: 状态'
+              type: SNMP_AGENT
+              snmp_oid: '1.3.6.1.4.1.58132.2.235.1.1.8.50.1.4.{#SNMPINDEX}'
+              key: 'sensor.fan.status[{#SNMPINDEX}]'
+              history: 7d
+              description: 'Information about fan health status.'
+              valuemap:
+                name: 'HUAWEI-SERVER-IBMC-MIB::entireStatus'
+              tags:
+                - tag: component
+                  value: fan
+              trigger_prototypes:
+                - uuid: 0326d134c14b458b82c81866882b528d
+                  expression: 'last(/Huawei xFusion Server v7/sensor.fan.status[{#SNMPINDEX}])=2'
+                  name: '风扇 {#SNMPINDEX}: 处于一般告警状态'
+                  priority: WARNING
+                - uuid: c3650ddf5f664409862a28d746c4859c
+                  expression: 'last(/Huawei xFusion Server v7/sensor.fan.status[{#SNMPINDEX}])=4'
+                  name: '风扇 {#SNMPINDEX}: 处于严重告警状态'
+                  priority: DISASTER
+                - uuid: e26aa01b12d044e39b4811548c006bd2
+                  expression: 'last(/Huawei xFusion Server v7/sensor.fan.status[{#SNMPINDEX}])=3'
+                  name: '风扇 {#SNMPINDEX}: 处于主要告警状态'
+                  priority: HIGH
+          preprocessing:
+            - type: DISCARD_UNCHANGED_HEARTBEAT
+              parameters:
+                - 1h
+        - uuid: 0b5f0f7bb6f64ef9bf724e4006d7a950
+          name: 电源自动发现
+          type: SNMP_AGENT
+          snmp_oid: 'discovery[{#SNMPVALUE},1.3.6.1.4.1.58132.2.235.1.1.6.50.1.1,{#DEVICENAME},1.3.6.1.4.1.58132.2.235.1.1.6.50.1.13]'
+          key: sensor.psu.discovery
+          delay: 5m
+          lifetime: 3h
+          description: 'Power supply index.'
+          item_prototypes:
+            - uuid: 1e191e9734414dd58011dd5d55551c9b
+              name: '电源{#DEVICENAME}: 厂商'
+              type: SNMP_AGENT
+              snmp_oid: '1.3.6.1.4.1.58132.2.235.1.1.6.50.1.2.{#SNMPINDEX}'
+              key: 'psu.manufacturer[{#SNMPINDEX}]'
+              history: 7d
+              trends: '0'
+              status: DISABLED
+              discover: NO_DISCOVER
+              value_type: CHAR
+              preprocessing:
+                - type: DISCARD_UNCHANGED_HEARTBEAT
+                  parameters:
+                    - 1h
+              tags:
+                - tag: component
+                  value: power
+            - uuid: afe102dd2f764c85a62eacdf6f3e2cb4
+              name: '电源{#DEVICENAME}: SN'
+              type: SNMP_AGENT
+              snmp_oid: '1.3.6.1.4.1.58132.2.235.1.1.6.50.1.15.{#SNMPINDEX}'
+              key: 'psu.serialnumber[{#SNMPINDEX}]'
+              history: 7d
+              trends: '0'
+              status: DISABLED
+              discover: NO_DISCOVER
+              value_type: CHAR
+              preprocessing:
+                - type: DISCARD_UNCHANGED_HEARTBEAT
+                  parameters:
+                    - 1h
+              tags:
+                - tag: component
+                  value: power
+            - uuid: eeb354be6ee6445eb937e3cef0d3c39d
+              name: '电源{#DEVICENAME}: 功率'
+              type: SNMP_AGENT
+              snmp_oid: '1.3.6.1.4.1.58132.2.235.1.1.6.50.1.8.{#SNMPINDEX}'
+              key: 'sensor.psu.power[{#SNMPINDEX}]'
+              history: 7d
+              units: W
+              description: |
+                Information about input power.
+                The unit is watt.
+              tags:
+                - tag: component
+                  value: power
+            - uuid: 97741fab7b184486b47b73c3e8e9df14
+              name: '电源{#DEVICENAME}: 状态'
+              type: SNMP_AGENT
+              snmp_oid: '1.3.6.1.4.1.58132.2.235.1.1.6.50.1.7.{#SNMPINDEX}'
+              key: 'sensor.psu.status[{#SNMPINDEX}]'
+              history: 7d
+              description: 'Information about power status.'
+              valuemap:
+                name: 'HUAWEI-SERVER-IBMC-MIB::entireStatus'
+              tags:
+                - tag: component
+                  value: health
+                - tag: component
+                  value: power
+              trigger_prototypes:
+                - uuid: aacac260467c47f1b806c0d18a500910
+                  expression: 'last(/Huawei xFusion Server v7/sensor.psu.status[{#SNMPINDEX}])=4'
+                  name: '电源 {#SNMPINDEX}: 处于严重告警状态'
+                  priority: DISASTER
+                - uuid: de678348ea1d4ea484b4ef46e4e9431b
+                  expression: 'last(/Huawei xFusion Server v7/sensor.psu.status[{#SNMPINDEX}])=3'
+                  name: '电源 {#SNMPINDEX}: 处于主要告警状态'
+                  priority: HIGH
+                - uuid: 37e392b948024ac8979935facac27ab0
+                  expression: 'last(/Huawei xFusion Server v7/sensor.psu.status[{#SNMPINDEX}])=2'
+                  name: '电源 {#SNMPINDEX}: 处于次要告警状态'
+                  priority: WARNING
+          preprocessing:
+            - type: DISCARD_UNCHANGED_HEARTBEAT
+              parameters:
+                - 1h
+        - uuid: de7184678adf4003b3e6e9ff9648de4d
+          name: 温度自动发现
+          type: SNMP_AGENT
+          snmp_oid: 'discovery[{#SNMPVALUE},1.3.6.1.4.1.58132.2.235.1.1.26.50.1.1,{#DEVICENAME},1.3.6.1.4.1.58132.2.235.1.1.26.50.1.2]'
+          key: sensor.temp.discovery
+          delay: 5m
+          lifetime: 3h
+          description: 'Information about temperature index.'
+          item_prototypes:
+            - uuid: a785f4a624c84c76a85e670df0ff1aba
+              name: '温度{#DEVICENAME}: 值'
+              type: SNMP_AGENT
+              snmp_oid: '1.3.6.1.4.1.58132.2.235.1.1.26.50.1.3.{#SNMPINDEX}'
+              key: 'sensor.temp.value[{#SNMPINDEX}]'
+              history: 7d
+              units: °C
+              description: |
+                Information about temperature reading,the unit is 1/10 Celsius degree.
+                If power off, the CPU temperature cannot be readable and is set to 65535.
+              preprocessing:
+                - type: MULTIPLIER
+                  parameters:
+                    - '0.1'
+              tags:
+                - tag: component
+                  value: temperature
+              trigger_prototypes:
+                - uuid: 23933b5cb77d44db883ee716a7402781
+                  expression: 'min(/Huawei xFusion Server v7/sensor.temp.value[{#SNMPINDEX}],5m)>{$SENSOR.TEMP.CRIT}'
+                  name: '温度 {#SNMPINDEX}: 持续 5 分钟高于 {$SENSOR.TEMP.CRIT}°C'
+                  priority: HIGH
+                  dependencies:
+                    - name: 电源未开启
+                      expression: 'last(/Huawei xFusion Server v7/poweronstate)<>2'
+          preprocessing:
+            - type: DISCARD_UNCHANGED_HEARTBEAT
+              parameters:
+                - 1h
+      tags:
+        - tag: class
+          value: server
+        - tag: model
+          value: v6
+        - tag: vendor
+          value: huawei
+      valuemaps:
+        - uuid: 0d0bbcc909ec4406bd2893b5dcfdc28a
+          name: available
+          mappings:
+            - value: '0'
+              newvalue: 'not available'
+            - value: '1'
+              newvalue: available
+            - value: '2'
+              newvalue: unknown
+        - uuid: 2e211d1602024890ba379f37579c03d1
+          name: dot3StatsDuplexStatus
+          mappings:
+            - value: '1'
+              newvalue: unknown
+            - value: '2'
+              newvalue: halfDuplex
+            - value: '3'
+              newvalue: fullDuplex
+        - uuid: e4a5b3af00a3476898f660a976f9c3e7
+          name: 'HUAWEI-SERVER-IBMC-MIB::availability'
+          mappings:
+            - value: '1'
+              newvalue: unknown
+            - value: '2'
+              newvalue: disabled
+            - value: '3'
+              newvalue: backup
+            - value: '4'
+              newvalue: active
+        - uuid: c99bc38d21434c35815f248c5be74191
+          name: 'HUAWEI-SERVER-IBMC-MIB::csrStatus'
+          mappings:
+            - value: '1'
+              newvalue: notStartedOrHasSuccessfullyCompleted
+            - value: '2'
+              newvalue: beingGenerated
+            - value: '3'
+              newvalue: failsGenerated
+        - uuid: 799304a7d3434032bb5cbc97e20fc29f
+          name: 'HUAWEI-SERVER-IBMC-MIB::disable/enable'
+          mappings:
+            - value: '1'
+              newvalue: disable
+            - value: '2'
+              newvalue: enable
+        - uuid: b12f956fb83e43389c759961bc09c2a3
+          name: 'HUAWEI-SERVER-IBMC-MIB::entireStatus'
+          mappings:
+            - value: '1'
+              newvalue: ok
+            - value: '2'
+              newvalue: minor
+            - value: '3'
+              newvalue: major
+            - value: '4'
+              newvalue: critical
+            - value: '5'
+              newvalue: absence
+            - value: '6'
+              newvalue: unknown
+        - uuid: 25905404d9c54ffc85645c401ec20d20
+          name: 'HUAWEI-SERVER-IBMC-MIB::ethHostPort'
+          mappings:
+            - value: '1'
+              newvalue: none
+            - value: '2'
+              newvalue: port1
+            - value: '3'
+              newvalue: port2
+            - value: '4'
+              newvalue: port3
+            - value: '5'
+              newvalue: port4
+        - uuid: 8e721187dc284ed69bcad1022f46206b
+          name: 'HUAWEI-SERVER-IBMC-MIB::ethIPSource'
+          mappings:
+            - value: '1'
+              newvalue: static
+            - value: '2'
+              newvalue: dhcp
+        - uuid: f7f01ebc1dc64ce9b8312b9c8907fea0
+          name: 'HUAWEI-SERVER-IBMC-MIB::ethMode'
+          mappings:
+            - value: '1'
+              newvalue: dedicated
+            - value: '2'
+              newvalue: lomShare
+            - value: '3'
+              newvalue: adaptive
+            - value: '4'
+              newvalue: pcieShare
+        - uuid: ef7233be7d4b45eeae03ef3c778c46e4
+          name: 'HUAWEI-SERVER-IBMC-MIB::ethType'
+          mappings:
+            - value: '1'
+              newvalue: mgmt
+            - value: '2'
+              newvalue: share
+        - uuid: af3488e4eadb469a80dfab3b3984c3f6
+          name: 'HUAWEI-SERVER-IBMC-MIB::hardDiskFwState'
+          mappings:
+            - value: '1'
+              newvalue: unconfigured-good
+            - value: '2'
+              newvalue: unconfigured-bad
+            - value: '3'
+              newvalue: hot-spare
+            - value: '4'
+              newvalue: offline
+            - value: '5'
+              newvalue: failed
+            - value: '6'
+              newvalue: rebuild
+            - value: '7'
+              newvalue: online
+            - value: '8'
+              newvalue: copyback
+            - value: '9'
+              newvalue: jbod
+            - value: '10'
+              newvalue: unconfigured-shielded
+            - value: '11'
+              newvalue: hot-spare-shielded
+            - value: '12'
+              newvalue: configured-shielded
+            - value: '13'
+              newvalue: foreign
+            - value: '14'
+              newvalue: active
+            - value: '15'
+              newvalue: standby
+            - value: '16'
+              newvalue: sleep
+            - value: '17'
+              newvalue: dst
+            - value: '18'
+              newvalue: smart
+            - value: '19'
+              newvalue: sct
+            - value: '255'
+              newvalue: unknown
+        - uuid: aec30711e51a4d84a7444c4a66022f8f
+          name: 'HUAWEI-SERVER-IBMC-MIB::hardDiskHotSpareState'
+          mappings:
+            - value: '1'
+              newvalue: none
+            - value: '2'
+              newvalue: global
+            - value: '3'
+              newvalue: dedicated
+            - value: '4'
+              newvalue: commissioned
+            - value: '5'
+              newvalue: emergency
+            - value: '255'
+              newvalue: unknown
+        - uuid: 84056cab96ae4e7e9c4f2b7b8c7fe1b0
+          name: 'HUAWEI-SERVER-IBMC-MIB::hardDiskInterfaceType'
+          mappings:
+            - value: '1'
+              newvalue: undefined
+            - value: '2'
+              newvalue: parallel-scsi
+            - value: '3'
+              newvalue: sas
+            - value: '4'
+              newvalue: sata
+            - value: '5'
+              newvalue: fiber-channel
+            - value: '6'
+              newvalue: sata-sas
+            - value: '7'
+              newvalue: pcie
+            - value: '255'
+              newvalue: unknown
+        - uuid: ee54d3fb74c0459587b3da28025e2ed4
+          name: 'HUAWEI-SERVER-IBMC-MIB::hardDiskLocationState'
+          mappings:
+            - value: '1'
+              newvalue: unknown
+            - value: '2'
+              newvalue: 'off'
+            - value: '3'
+              newvalue: 'on'
+        - uuid: 1cc0048db0014dac9092ce020c6b678e
+          name: 'HUAWEI-SERVER-IBMC-MIB::hardDiskMediaType'
+          mappings:
+            - value: '1'
+              newvalue: hdd
+            - value: '2'
+              newvalue: ssd
+            - value: '3'
+              newvalue: ssm
+            - value: '255'
+              newvalue: unknown
+        - uuid: 122f87b0e53e432e8e8525ac86d1ad0e
+          name: 'HUAWEI-SERVER-IBMC-MIB::hardDiskPatrolReadStatus'
+          mappings:
+            - value: '1'
+              newvalue: stopped
+            - value: '2'
+              newvalue: in-progress
+            - value: '255'
+              newvalue: unknown
+        - uuid: 3507b41e311c46f0abed6bccca1f332c
+          name: 'HUAWEI-SERVER-IBMC-MIB::hardDiskPowerState'
+          mappings:
+            - value: '1'
+              newvalue: spun-up
+            - value: '2'
+              newvalue: spun-down
+            - value: '3'
+              newvalue: transition
+            - value: '255'
+              newvalue: unknown
+        - uuid: 7ef04b7b815b4434ab9da047a47525ee
+          name: 'HUAWEI-SERVER-IBMC-MIB::powerOnPolicy'
+          mappings:
+            - value: '1'
+              newvalue: stayoff
+            - value: '2'
+              newvalue: restorePreviousState
+            - value: '3'
+              newvalue: turnon
+        - uuid: 09345ca5ffd6406eb912c1617afecca7
+          name: 'HUAWEI-SERVER-IBMC-MIB::powerSupplyEntireMode'
+          mappings:
+            - value: '1'
+              newvalue: loadBalance
+            - value: '2'
+              newvalue: activeStandby
+            - value: '3'
+              newvalue: unsupport
+        - uuid: 34ed5d811354418cb30e6527292ee96a
+          name: 'HUAWEI-SERVER-IBMC-MIB::powerSupplyInputMode'
+          mappings:
+            - value: '1'
+              newvalue: acInput
+            - value: '2'
+              newvalue: dcInput
+            - value: '3'
+              newvalue: acInputDcInput
+        - uuid: 329deb40c81c4a9d89aad831ce618d09
+          name: 'HUAWEI-SERVER-IBMC-MIB::powerSupplyProtocol'
+          mappings:
+            - value: '1'
+              newvalue: psmi
+            - value: '2'
+              newvalue: pmbus
+        - uuid: aeb09e10dad34f2381c6b282aca94142
+          name: 'HUAWEI-SERVER-IBMC-MIB::powerSupplyWorkMode'
+          mappings:
+            - value: '1'
+              newvalue: active
+            - value: '2'
+              newvalue: backup
+            - value: '3'
+              newvalue: unknown
+        - uuid: 7cfef1be11af47db96ad4f7ba8b30092
+          name: 'HUAWEI-SERVER-IBMC-MIB::presence'
+          mappings:
+            - value: '1'
+              newvalue: absence
+            - value: '2'
+              newvalue: presence
+            - value: '3'
+              newvalue: unknown
+        - uuid: aca4fc70440040b1b6e657d5392333a9
+          name: 'HUAWEI-SERVER-IBMC-MIB::raidControllerDeviceInterface'
+          mappings:
+            - value: '1'
+              newvalue: spi
+            - value: '2'
+              newvalue: sas-3G
+            - value: '3'
+              newvalue: sata-1-5G
+            - value: '4'
+              newvalue: sata-3G
+            - value: '5'
+              newvalue: sas-6G
+            - value: '6'
+              newvalue: sas-12G
+            - value: '255'
+              newvalue: unknown
+        - uuid: 3258a88780fc4631b67f0decb058fd96
+          name: 'HUAWEI-SERVER-IBMC-MIB::raidControllerMode'
+          mappings:
+            - value: '1'
+              newvalue: none-raid
+            - value: '2'
+              newvalue: raid
+            - value: '255'
+              newvalue: unknown
+        - uuid: b6edd9a2343841e2b68806aacdb44c7b
+          name: 'HUAWEI-SERVER-IBMC-MIB::raidCopybackEnable'
+          mappings:
+            - value: '1'
+              newvalue: unknown
+            - value: '2'
+              newvalue: disabled
+            - value: '3'
+              newvalue: enabled
+        - uuid: 0f1905952c0349f8af70b6e5f500e3fe
+          name: 'HUAWEI-SERVER-IBMC-MIB::syslogIdentity'
+          mappings:
+            - value: '1'
+              newvalue: boardSN
+            - value: '2'
+              newvalue: productAssetTag
+            - value: '3'
+              newvalue: hostName
+        - uuid: cc5379e88982448bab6d4c8e7a81bacf
+          name: 'HUAWEI-SERVER-IBMC-MIB::syslogProtocolType'
+          mappings:
+            - value: '1'
+              newvalue: udp
+            - value: '2'
+              newvalue: tcp
+            - value: '3'
+              newvalue: tls
+        - uuid: a74769fd647f4eafad304676f3a1f0e7
+          name: 'HUAWEI-SERVER-IBMC-MIB::systemBootsequence'
+          mappings:
+            - value: '1'
+              newvalue: noOverride
+            - value: '2'
+              newvalue: pxe
+            - value: '3'
+              newvalue: hdd
+            - value: '4'
+              newvalue: cdDvd
+            - value: '5'
+              newvalue: floppyPrimaryRemovableMedia
+            - value: '6'
+              newvalue: unspecified
+            - value: '7'
+              newvalue: biossetup
+        - uuid: 0460c98b30554e4581d2ad25f926b2f0
+          name: 'HUAWEI-SERVER-IBMC-MIB::systemHealth'
+          mappings:
+            - value: '1'
+              newvalue: ok
+            - value: '2'
+              newvalue: minor
+            - value: '3'
+              newvalue: major
+            - value: '4'
+              newvalue: critical
+        - uuid: 436b06c69d5743aa8cf792fa7a42dc9d
+          name: 'HUAWEI-SERVER-IBMC-MIB::systemPowerState'
+          mappings:
+            - value: '1'
+              newvalue: normalPowerOff
+            - value: '2'
+              newvalue: powerOn
+            - value: '3'
+              newvalue: forcedSystemReset
+            - value: '4'
+              newvalue: forcedPowerCycle
+            - value: '5'
+              newvalue: forcedPowerOff
+        - uuid: 5e510df3b6864ec49639f400aba7df35
+          name: 'HUAWEI-SERVER-IBMC-MIB::unknown'
+          mappings:
+            - value: '-1'
+              newvalue: unknown
+            - value: '0'
+              newvalue: ok
+            - value: '255'
+              newvalue: unknown
+            - value: '65535'
+              newvalue: unknown
+            - value: '4294967295'
+              newvalue: unknown
+        - uuid: e4d5aa9fb37649a1af3826a8c139d82a
+          name: 'HUAWEI-SERVER-IBMC-MIB::yes/no'
+          mappings:
+            - value: '1'
+              newvalue: 'no'
+            - value: '2'
+              newvalue: 'yes'
+            - value: '255'
+              newvalue: unknown
+        - uuid: c1d5cc820c2d486681518a9b24f76aeb
+          name: ifOperStatus
+          mappings:
+            - value: '1'
+              newvalue: up
+            - value: '2'
+              newvalue: down
+            - value: '3'
+              newvalue: testing
+            - value: '4'
+              newvalue: unknown
+            - value: '5'
+              newvalue: dormant
+            - value: '6'
+              newvalue: notPresent
+            - value: '7'
+              newvalue: lowerLayerDown
+        - uuid: cca1d4e100d34db4a15f68a6f92ea1dc
+          name: ifType
+          mappings:
+            - value: '1'
+              newvalue: other
+            - value: '2'
+              newvalue: regular1822
+            - value: '3'
+              newvalue: hdh1822
+            - value: '4'
+              newvalue: ddnX25
+            - value: '5'
+              newvalue: rfc877x25
+            - value: '6'
+              newvalue: ethernetCsmacd
+            - value: '7'
+              newvalue: iso88023Csmacd
+            - value: '8'
+              newvalue: iso88024TokenBus
+            - value: '9'
+              newvalue: iso88025TokenRing
+            - value: '10'
+              newvalue: iso88026Man
+            - value: '11'
+              newvalue: starLan
+            - value: '12'
+              newvalue: proteon10Mbit
+            - value: '13'
+              newvalue: proteon80Mbit
+            - value: '14'
+              newvalue: hyperchannel
+            - value: '15'
+              newvalue: fddi
+            - value: '16'
+              newvalue: lapb
+            - value: '17'
+              newvalue: sdlc
+            - value: '18'
+              newvalue: ds1
+            - value: '19'
+              newvalue: e1
+            - value: '20'
+              newvalue: basicISDN
+            - value: '21'
+              newvalue: primaryISDN
+            - value: '22'
+              newvalue: propPointToPointSerial
+            - value: '23'
+              newvalue: ppp
+            - value: '24'
+              newvalue: softwareLoopback
+            - value: '25'
+              newvalue: eon
+            - value: '26'
+              newvalue: ethernet3Mbit
+            - value: '27'
+              newvalue: nsip
+            - value: '28'
+              newvalue: slip
+            - value: '29'
+              newvalue: ultra
+            - value: '30'
+              newvalue: ds3
+            - value: '31'
+              newvalue: sip
+            - value: '32'
+              newvalue: frameRelay
+            - value: '33'
+              newvalue: rs232
+            - value: '34'
+              newvalue: para
+            - value: '35'
+              newvalue: arcnet
+            - value: '36'
+              newvalue: arcnetPlus
+            - value: '37'
+              newvalue: atm
+            - value: '38'
+              newvalue: miox25
+            - value: '39'
+              newvalue: sonet
+            - value: '40'
+              newvalue: x25ple
+            - value: '41'
+              newvalue: iso88022llc
+            - value: '42'
+              newvalue: localTalk
+            - value: '43'
+              newvalue: smdsDxi
+            - value: '44'
+              newvalue: frameRelayService
+            - value: '45'
+              newvalue: v35
+            - value: '46'
+              newvalue: hssi
+            - value: '47'
+              newvalue: hippi
+            - value: '48'
+              newvalue: modem
+            - value: '49'
+              newvalue: aal5
+            - value: '50'
+              newvalue: sonetPath
+            - value: '51'
+              newvalue: sonetVT
+            - value: '52'
+              newvalue: smdsIcip
+            - value: '53'
+              newvalue: propVirtual
+            - value: '54'
+              newvalue: propMultiplexor
+            - value: '55'
+              newvalue: ieee80212
+            - value: '56'
+              newvalue: fibreChannel
+            - value: '57'
+              newvalue: hippiInterface
+            - value: '58'
+              newvalue: frameRelayInterconnect
+            - value: '59'
+              newvalue: aflane8023
+            - value: '60'
+              newvalue: aflane8025
+            - value: '61'
+              newvalue: cctEmul
+            - value: '62'
+              newvalue: fastEther
+            - value: '63'
+              newvalue: isdn
+            - value: '64'
+              newvalue: v11
+            - value: '65'
+              newvalue: v36
+            - value: '66'
+              newvalue: g703at64k
+            - value: '67'
+              newvalue: g703at2mb
+            - value: '68'
+              newvalue: qllc
+            - value: '69'
+              newvalue: fastEtherFX
+            - value: '70'
+              newvalue: channel
+            - value: '71'
+              newvalue: ieee80211
+            - value: '72'
+              newvalue: ibm370parChan
+            - value: '73'
+              newvalue: escon
+            - value: '74'
+              newvalue: dlsw
+            - value: '75'
+              newvalue: isdns
+            - value: '76'
+              newvalue: isdnu
+            - value: '77'
+              newvalue: lapd
+            - value: '78'
+              newvalue: ipSwitch
+            - value: '79'
+              newvalue: rsrb
+            - value: '80'
+              newvalue: atmLogical
+            - value: '81'
+              newvalue: ds0
+            - value: '82'
+              newvalue: ds0Bundle
+            - value: '83'
+              newvalue: bsc
+            - value: '84'
+              newvalue: async
+            - value: '85'
+              newvalue: cnr
+            - value: '86'
+              newvalue: iso88025Dtr
+            - value: '87'
+              newvalue: eplrs
+            - value: '88'
+              newvalue: arap
+            - value: '89'
+              newvalue: propCnls
+            - value: '90'
+              newvalue: hostPad
+            - value: '91'
+              newvalue: termPad
+            - value: '92'
+              newvalue: frameRelayMPI
+            - value: '93'
+              newvalue: x213
+            - value: '94'
+              newvalue: adsl
+            - value: '95'
+              newvalue: radsl
+            - value: '96'
+              newvalue: sdsl
+            - value: '97'
+              newvalue: vdsl
+            - value: '98'
+              newvalue: iso88025CRFPInt
+            - value: '99'
+              newvalue: myrinet
+            - value: '100'
+              newvalue: voiceEM
+            - value: '101'
+              newvalue: voiceFXO
+            - value: '102'
+              newvalue: voiceFXS
+            - value: '103'
+              newvalue: voiceEncap
+            - value: '104'
+              newvalue: voiceOverIp
+            - value: '105'
+              newvalue: atmDxi
+            - value: '106'
+              newvalue: atmFuni
+            - value: '107'
+              newvalue: atmIma
+            - value: '108'
+              newvalue: pppMultilinkBundle
+            - value: '109'
+              newvalue: ipOverCdlc
+            - value: '110'
+              newvalue: ipOverClaw
+            - value: '111'
+              newvalue: stackToStack
+            - value: '112'
+              newvalue: virtualIpAddress
+            - value: '113'
+              newvalue: mpc
+            - value: '114'
+              newvalue: ipOverAtm
+            - value: '115'
+              newvalue: iso88025Fiber
+            - value: '116'
+              newvalue: tdlc
+            - value: '117'
+              newvalue: gigabitEthernet
+            - value: '118'
+              newvalue: hdlc
+            - value: '119'
+              newvalue: lapf
+            - value: '120'
+              newvalue: v37
+            - value: '121'
+              newvalue: x25mlp
+            - value: '122'
+              newvalue: x25huntGroup
+            - value: '123'
+              newvalue: trasnpHdlc
+            - value: '124'
+              newvalue: interleave
+            - value: '125'
+              newvalue: fast
+            - value: '126'
+              newvalue: ip
+            - value: '127'
+              newvalue: docsCableMaclayer
+            - value: '128'
+              newvalue: docsCableDownstream
+            - value: '129'
+              newvalue: docsCableUpstream
+            - value: '130'
+              newvalue: a12MppSwitch
+            - value: '131'
+              newvalue: tunnel
+            - value: '132'
+              newvalue: coffee
+            - value: '133'
+              newvalue: ces
+            - value: '134'
+              newvalue: atmSubInterface
+            - value: '135'
+              newvalue: l2vlan
+            - value: '136'
+              newvalue: l3ipvlan
+            - value: '137'
+              newvalue: l3ipxvlan
+            - value: '138'
+              newvalue: digitalPowerline
+            - value: '139'
+              newvalue: mediaMailOverIp
+            - value: '140'
+              newvalue: dtm
+            - value: '141'
+              newvalue: dcn
+            - value: '142'
+              newvalue: ipForward
+            - value: '143'
+              newvalue: msdsl
+            - value: '144'
+              newvalue: ieee1394
+            - value: '145'
+              newvalue: if-gsn
+            - value: '146'
+              newvalue: dvbRccMacLayer
+            - value: '147'
+              newvalue: dvbRccDownstream
+            - value: '148'
+              newvalue: dvbRccUpstream
+            - value: '149'
+              newvalue: atmVirtual
+            - value: '150'
+              newvalue: mplsTunnel
+            - value: '151'
+              newvalue: srp
+            - value: '152'
+              newvalue: voiceOverAtm
+            - value: '153'
+              newvalue: voiceOverFrameRelay
+            - value: '154'
+              newvalue: idsl
+            - value: '155'
+              newvalue: compositeLink
+            - value: '156'
+              newvalue: ss7SigLink
+            - value: '157'
+              newvalue: propWirelessP2P
+            - value: '158'
+              newvalue: frForward
+            - value: '159'
+              newvalue: rfc1483
+            - value: '160'
+              newvalue: usb
+            - value: '161'
+              newvalue: ieee8023adLag
+            - value: '162'
+              newvalue: bgppolicyaccounting
+            - value: '163'
+              newvalue: frf16MfrBundle
+            - value: '164'
+              newvalue: h323Gatekeeper
+            - value: '165'
+              newvalue: h323Proxy
+            - value: '166'
+              newvalue: mpls
+            - value: '167'
+              newvalue: mfSigLink
+            - value: '168'
+              newvalue: hdsl2
+            - value: '169'
+              newvalue: shdsl
+            - value: '170'
+              newvalue: ds1FDL
+            - value: '171'
+              newvalue: pos
+            - value: '172'
+              newvalue: dvbAsiIn
+            - value: '173'
+              newvalue: dvbAsiOut
+            - value: '174'
+              newvalue: plc
+            - value: '175'
+              newvalue: nfas
+            - value: '176'
+              newvalue: tr008
+            - value: '177'
+              newvalue: gr303RDT
+            - value: '178'
+              newvalue: gr303IDT
+            - value: '179'
+              newvalue: isup
+            - value: '180'
+              newvalue: propDocsWirelessMaclayer
+            - value: '181'
+              newvalue: propDocsWirelessDownstream
+            - value: '182'
+              newvalue: propDocsWirelessUpstream
+            - value: '183'
+              newvalue: hiperlan2
+            - value: '184'
+              newvalue: propBWAp2Mp
+            - value: '185'
+              newvalue: sonetOverheadChannel
+            - value: '186'
+              newvalue: digitalWrapperOverheadChannel
+            - value: '187'
+              newvalue: aal2
+            - value: '188'
+              newvalue: radioMAC
+            - value: '189'
+              newvalue: atmRadio
+            - value: '190'
+              newvalue: imt
+            - value: '191'
+              newvalue: mvl
+            - value: '192'
+              newvalue: reachDSL
+            - value: '193'
+              newvalue: frDlciEndPt
+            - value: '194'
+              newvalue: atmVciEndPt
+            - value: '195'
+              newvalue: opticalChannel
+            - value: '196'
+              newvalue: opticalTransport
+            - value: '197'
+              newvalue: propAtm
+            - value: '198'
+              newvalue: voiceOverCable
+            - value: '199'
+              newvalue: infiniband
+            - value: '200'
+              newvalue: teLink
+            - value: '201'
+              newvalue: q2931
+            - value: '202'
+              newvalue: virtualTg
+            - value: '203'
+              newvalue: sipTg
+            - value: '204'
+              newvalue: sipSig
+            - value: '205'
+              newvalue: docsCableUpstreamChannel
+            - value: '206'
+              newvalue: econet
+            - value: '207'
+              newvalue: pon155
+            - value: '208'
+              newvalue: pon622
+            - value: '209'
+              newvalue: bridge
+            - value: '210'
+              newvalue: linegroup
+            - value: '211'
+              newvalue: voiceEMFGD
+            - value: '212'
+              newvalue: voiceFGDEANA
+            - value: '213'
+              newvalue: voiceDID
+            - value: '214'
+              newvalue: mpegTransport
+            - value: '215'
+              newvalue: sixToFour
+            - value: '216'
+              newvalue: gtp
+            - value: '217'
+              newvalue: pdnEtherLoop1
+            - value: '218'
+              newvalue: pdnEtherLoop2
+            - value: '219'
+              newvalue: opticalChannelGroup
+            - value: '220'
+              newvalue: homepna
+            - value: '221'
+              newvalue: gfp
+            - value: '222'
+              newvalue: ciscoISLvlan
+            - value: '223'
+              newvalue: actelisMetaLOOP
+            - value: '224'
+              newvalue: fcipLink
+            - value: '225'
+              newvalue: rpr
+            - value: '226'
+              newvalue: qam
+            - value: '227'
+              newvalue: lmp
+            - value: '228'
+              newvalue: cblVectaStar
+            - value: '229'
+              newvalue: docsCableMCmtsDownstream
+            - value: '230'
+              newvalue: adsl2
+            - value: '231'
+              newvalue: macSecControlledIF
+            - value: '232'
+              newvalue: macSecUncontrolledIF
+            - value: '233'
+              newvalue: aviciOpticalEther
+            - value: '234'
+              newvalue: atmbond
+            - value: '235'
+              newvalue: voiceFGDOS
+            - value: '236'
+              newvalue: mocaVersion1
+            - value: '237'
+              newvalue: ieee80216WMAN
+            - value: '238'
+              newvalue: adsl2plus
+            - value: '239'
+              newvalue: dvbRcsMacLayer
+            - value: '240'
+              newvalue: dvbTdm
+            - value: '241'
+              newvalue: dvbRcsTdma
+            - value: '242'
+              newvalue: x86Laps
+            - value: '243'
+              newvalue: wwanPP
+            - value: '244'
+              newvalue: wwanPP2
+            - value: '245'
+              newvalue: voiceEBS
+            - value: '246'
+              newvalue: ifPwType
+            - value: '247'
+              newvalue: ilan
+            - value: '248'
+              newvalue: pip
+            - value: '249'
+              newvalue: aluELP
+            - value: '250'
+              newvalue: gpon
+            - value: '251'
+              newvalue: vdsl2
+            - value: '252'
+              newvalue: capwapDot11Profile
+            - value: '253'
+              newvalue: capwapDot11Bss
+            - value: '254'
+              newvalue: capwapWtpVirtualRadio
+            - value: '255'
+              newvalue: bits
+            - value: '256'
+              newvalue: docsCableUpstreamRfPort
+            - value: '257'
+              newvalue: cableDownstreamRfPort
+            - value: '258'
+              newvalue: vmwareVirtualNic
+            - value: '259'
+              newvalue: ieee802154
+            - value: '260'
+              newvalue: otnOdu
+            - value: '261'
+              newvalue: otnOtu
+            - value: '262'
+              newvalue: ifVfiType
+            - value: '263'
+              newvalue: g9981
+            - value: '264'
+              newvalue: g9982
+            - value: '265'
+              newvalue: g9983
+            - value: '266'
+              newvalue: aluEpon
+            - value: '267'
+              newvalue: aluEponOnu
+            - value: '268'
+              newvalue: aluEponPhysicalUni
+            - value: '269'
+              newvalue: aluEponLogicalLink
+            - value: '270'
+              newvalue: aluGponOnu
+            - value: '271'
+              newvalue: aluGponPhysicalUni
+            - value: '272'
+              newvalue: vmwareNicTeam
+            - value: '277'
+              newvalue: docsOfdmDownstream
+            - value: '278'
+              newvalue: docsOfdmaUpstream
+            - value: '279'
+              newvalue: gfast
+            - value: '280'
+              newvalue: sdci
+            - value: '281'
+              newvalue: xboxWireless
+            - value: '282'
+              newvalue: fastdsl
+            - value: '283'
+              newvalue: docsCableScte55d1FwdOob
+            - value: '284'
+              newvalue: docsCableScte55d1RetOob
+            - value: '285'
+              newvalue: docsCableScte55d2DsOob
+            - value: '286'
+              newvalue: docsCableScte55d2UsOob
+            - value: '287'
+              newvalue: docsCableNdf
+            - value: '288'
+              newvalue: docsCableNdr
+            - value: '289'
+              newvalue: ptm
+            - value: '290'
+              newvalue: ghn
+        - uuid: 943a8fc0433b428ba324313f6f2a8aa4
+          name: state
+          mappings:
+            - value: '0'
+              newvalue: down
+            - value: '1'
+              newvalue: up

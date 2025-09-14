@@ -1,0 +1,2144 @@
+zabbix_export:
+  version: '6.0'
+  date: '2025-07-02T03:10:06Z'
+  groups:
+    -
+      uuid: 4acea20ba1254054930e725442fccd0f
+      name: Templates
+  templates:
+    -
+      uuid: 7b4dd613b5bb424f861d280a51701766
+      template: 'Huawei OLT'
+      name: 'Huawei OLT'
+      description: |
+        创建人：lw
+        创建时间：2025-01-14
+        修改时间：
+        适用型号：OLT
+        基于模板：huawei switch
+        基于文件：HUAWEI-XPON-COMMON-MIB、HUAWEI-XPON-MIB
+        基于url：
+        其他注意事项：
+      groups:
+        -
+          name: Templates
+      items:
+        -
+          uuid: d8ca302655714109ace41abb8712bba5
+          name: 'ICMP Ping'
+          type: SIMPLE
+          key: icmpping
+          history: 7d
+          valuemap:
+            name: state
+          tags:
+            -
+              tag: component
+              value: health
+            -
+              tag: component
+              value: network
+          triggers:
+            -
+              uuid: 73f4fb8fc88e4e969d195317490fbbb5
+              expression: 'max(/Huawei OLT/icmpping,#3)=0'
+              name: 'ICMP Ping 不通'
+              priority: DISASTER
+              description: 'Last three attempts returned timeout.  Please check device connectivity.'
+              tags:
+                -
+                  tag: scope
+                  value: availability
+        -
+          uuid: 9a262e473bf24abcb6934cea0defc6f0
+          name: 'ICMP Ping 丢包率'
+          type: SIMPLE
+          key: icmppingloss
+          history: 7d
+          value_type: FLOAT
+          units: '%'
+          tags:
+            -
+              tag: component
+              value: health
+            -
+              tag: component
+              value: network
+          triggers:
+            -
+              uuid: 3efdca1e9ef0478586645daaa05150aa
+              expression: 'min(/Huawei OLT/icmppingloss,5m)>{$ICMP.LOSS.WARN} and min(/Huawei OLT/icmppingloss,5m)<100'
+              name: 'ICMP Ping 丢包率持续 5 分钟大于 {$ICMP.LOSS.WARN}%'
+              priority: AVERAGE
+              dependencies:
+                -
+                  name: 'ICMP Ping 不通'
+                  expression: 'max(/Huawei OLT/icmpping,#3)=0'
+              tags:
+                -
+                  tag: scope
+                  value: availability
+                -
+                  tag: scope
+                  value: performance
+        -
+          uuid: ab8bb44f83fd4c08879729f7d5fffc42
+          name: 'ICMP Ping 延迟'
+          type: SIMPLE
+          key: icmppingsec
+          history: 7d
+          value_type: FLOAT
+          units: s
+          tags:
+            -
+              tag: component
+              value: health
+            -
+              tag: component
+              value: network
+          triggers:
+            -
+              uuid: 103a781e25254fdcb3bd0c9f537d050c
+              expression: 'avg(/Huawei OLT/icmppingsec,5m)>{$ICMP.RESPONSE_TIME.WARN}'
+              name: 'ICMP Ping 5 分钟平均延迟大于 {$ICMP.RESPONSE_TIME.WARN} 秒'
+              priority: AVERAGE
+              dependencies:
+                -
+                  name: 'ICMP Ping 不通'
+                  expression: 'max(/Huawei OLT/icmpping,#3)=0'
+                -
+                  name: 'ICMP Ping 丢包率持续 5 分钟大于 {$ICMP.LOSS.WARN}%'
+                  expression: 'min(/Huawei OLT/icmppingloss,5m)>{$ICMP.LOSS.WARN} and min(/Huawei OLT/icmppingloss,5m)<100'
+              tags:
+                -
+                  tag: scope
+                  value: availability
+                -
+                  tag: scope
+                  value: performance
+        -
+          uuid: ae6b3328e6324734b7aad1ed9445ab44
+          name: 系统联系人
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.2.1.1.4.0
+          key: system.contact
+          history: 7d
+          trends: '0'
+          value_type: CHAR
+          description: |
+            MIB: SNMPv2-MIB
+            The textual identification of the contact person for this managed node, together with information on how to contact this person.  If no contact information is known, the value is the zero-length string.
+          preprocessing:
+            -
+              type: DISCARD_UNCHANGED_HEARTBEAT
+              parameters:
+                - 1h
+          tags:
+            -
+              tag: component
+              value: system
+        -
+          uuid: dd9eaa55ed0946fb87e622b98061b619
+          name: 'CPU 使用率'
+          type: SNMP_AGENT
+          snmp_oid: 'discovery[{#CPU.UTIL},1.3.6.1.4.1.2011.5.25.31.1.1.1.1.5]'
+          key: system.cpu.util
+          history: 7d
+          value_type: FLOAT
+          units: '%'
+          description: |
+            MIB: HUAWEI-ENTITY-EXTENT-MIB
+            The CPU usage for this entity. Generally, the CPU usage will calculate the overall CPU usage on the entity, and itis not sensible with the number of CPU on the entity.
+            Reference: http://support.huawei.com/enterprise/KnowledgebaseReadAction.action?contentId=KB1000090234
+          preprocessing:
+            -
+              type: JAVASCRIPT
+              parameters:
+                - |
+                  var sum = 0,
+                      total = 0;
+                  
+                  JSON.parse(value).forEach(function (item) {
+                    var temp = parseInt(item['{#CPU.UTIL}']);
+                    if (temp != 0) {
+                      sum += temp;
+                      total += 1;
+                    }
+                  });
+                  
+                  return total ? sum / total : 0;
+          tags:
+            -
+              tag: component
+              value: cpu
+          triggers:
+            -
+              uuid: b5a8df4ecd2946d7b18cca0b66efc863
+              expression: 'min(/Huawei OLT/system.cpu.util,5m)>{$CPU.UTIL.CRIT}'
+              name: 'CPU 使用率持续 5 分钟大于 {$CPU.UTIL.CRIT}%'
+              priority: AVERAGE
+              description: 'CPU utilization is too high. The system might be slow to respond.'
+              tags:
+                -
+                  tag: scope
+                  value: performance
+        -
+          uuid: 9257a5b14eb244d993ea76cfa491c2ff
+          name: 系统描述
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.2.1.1.1.0
+          key: system.descr
+          history: 7d
+          trends: '0'
+          value_type: TEXT
+          description: |
+            MIB: SNMPv2-MIB
+            A textual description of the entity. This value should
+            include the full name and version identification of the system's hardware type, software operating-system, and
+            networking software.
+          preprocessing:
+            -
+              type: DISCARD_UNCHANGED_HEARTBEAT
+              parameters:
+                - 1h
+          tags:
+            -
+              tag: component
+              value: system
+        -
+          uuid: 3d834894ba124a018979737b1f751174
+          name: 系统位置
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.2.1.1.6.0
+          key: system.location
+          history: 7d
+          trends: '0'
+          value_type: CHAR
+          description: |
+            MIB: SNMPv2-MIB
+            The physical location of this node (e.g., `telephone closet, 3rd floor').  If the location is unknown, the value is the zero-length string.
+          preprocessing:
+            -
+              type: DISCARD_UNCHANGED_HEARTBEAT
+              parameters:
+                - 1h
+          tags:
+            -
+              tag: component
+              value: system
+        -
+          uuid: 0bda1047523541bb86748aa4f70bc2d3
+          name: 系统名称
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.2.1.1.5.0
+          key: system.name
+          history: 7d
+          trends: '0'
+          value_type: CHAR
+          description: |
+            MIB: SNMPv2-MIB
+            An administratively-assigned name for this managed node.By convention, this is the node's fully-qualified domain name.  If the name is unknown, the value is the zero-length string.
+          preprocessing:
+            -
+              type: DISCARD_UNCHANGED_HEARTBEAT
+              parameters:
+                - 1h
+          tags:
+            -
+              tag: component
+              value: system
+          triggers:
+            -
+              uuid: f18d48d63f0547abbdee2176a562a738
+              expression: 'last(/Huawei OLT/system.name,#1)<>last(/Huawei OLT/system.name,#2) and length(last(/Huawei OLT/system.name))>0'
+              name: 系统名称发生变更
+              priority: INFO
+              tags:
+                -
+                  tag: scope
+                  value: notice
+                -
+                  tag: scope
+                  value: security
+        -
+          uuid: aec525a24d884150a554774fda3830d8
+          name: '系统 ObjectID'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.2.1.1.2.0
+          key: system.objectid
+          history: 7d
+          trends: '0'
+          value_type: CHAR
+          description: |
+            MIB: SNMPv2-MIB
+            The vendor's authoritative identification of the network management subsystem contained in the entity.  This value is allocated within the SMI enterprises subtree (1.3.6.1.4.1) and provides an easy and unambiguous means for determining`what kind of box' is being managed.  For example, if vendor`Flintstones, Inc.' was assigned the subtree1.3.6.1.4.1.4242, it could assign the identifier 1.3.6.1.4.1.4242.1.1 to its `Fred Router'.
+          preprocessing:
+            -
+              type: DISCARD_UNCHANGED_HEARTBEAT
+              parameters:
+                - 1h
+          tags:
+            -
+              tag: component
+              value: system
+        -
+          uuid: bc497df2bec045f69d58ecf1c376af0f
+          name: 运行时长
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.2.1.1.3.0
+          key: system.uptime
+          history: 7d
+          trends: '0'
+          units: uptime
+          description: |
+            MIB: SNMPv2-MIB
+            The time (in hundredths of a second) since the network management portion of the system was last re-initialized.
+          preprocessing:
+            -
+              type: MULTIPLIER
+              parameters:
+                - '0.01'
+          tags:
+            -
+              tag: component
+              value: system
+          triggers:
+            -
+              uuid: d9e16510c85741d49d55725a94ab3653
+              expression: 'last(/Huawei OLT/system.uptime)<10m'
+              name: 软件层面发生重启
+              priority: WARNING
+              description: 'Uptime is less than 10 minutes.'
+              dependencies:
+                -
+                  name: 'SNMP 不可用'
+                  expression: 'max(/Huawei OLT/zabbix[host,snmp,available],5m)=0'
+              tags:
+                -
+                  tag: scope
+                  value: notice
+        -
+          uuid: dbb82e1626634385b931f505e8b3291a
+          name: 内存使用率
+          type: SNMP_AGENT
+          snmp_oid: 'discovery[{#MEM.UTIL},1.3.6.1.4.1.2011.5.25.31.1.1.1.1.7]'
+          key: vm.memory.util
+          history: 7d
+          value_type: FLOAT
+          units: '%'
+          description: |
+            MIB: HUAWEI-ENTITY-EXTENT-MIB
+            The memory usage for the entity. This object indicates what percent of memory are used.
+            Reference: http://support.huawei.com/enterprise/KnowledgebaseReadAction.action?contentId=KB1000090234
+          preprocessing:
+            -
+              type: JAVASCRIPT
+              parameters:
+                - |
+                  var sum = 0,
+                      total = 0;
+                  
+                  JSON.parse(value).forEach(function (item) {
+                    var temp = parseInt(item['{#MEM.UTIL}']);
+                    if (temp != 0) {
+                      sum += temp;
+                      total += 1;
+                    }
+                  });
+                  
+                  return total ? sum / total : 0;
+          tags:
+            -
+              tag: component
+              value: memory
+          triggers:
+            -
+              uuid: 00f114d34ec54d1ca18ca6cbd669e4f8
+              expression: 'min(/Huawei OLT/vm.memory.util,5m)>{$MEMORY.UTIL.CRIT}'
+              name: '内存使用率持续 5 分钟大于 {$MEMORY.UTIL.CRIT}%'
+              priority: AVERAGE
+              description: 'Memory utilization is too high. The system might be slow to respond.'
+              tags:
+                -
+                  tag: scope
+                  value: performance
+        -
+          uuid: 98932fe4c2d840eb91143777d8939de7
+          name: 'SNMP 可用性'
+          type: INTERNAL
+          key: 'zabbix[host,snmp,available]'
+          history: 7d
+          description: |
+            Availability of SNMP checks on the host. The value of this item corresponds to availability icons in the host list.
+            Possible value:
+            0 - not available
+            1 - available
+            2 - unknown
+          valuemap:
+            name: available
+          tags:
+            -
+              tag: component
+              value: health
+            -
+              tag: component
+              value: network
+          triggers:
+            -
+              uuid: 276c5d585f434f7e8a4f54cd4b30d515
+              expression: 'max(/Huawei OLT/zabbix[host,snmp,available],5m)=0'
+              name: 'SNMP 不可用'
+              priority: HIGH
+              description: 'SNMP 协议端口不可达，请检查设备的网络连接和设备上的 SNMP 设置'
+              dependencies:
+                -
+                  name: 'ICMP Ping 不通'
+                  expression: 'max(/Huawei OLT/icmpping,#3)=0'
+              tags:
+                -
+                  tag: scope
+                  value: availability
+      discovery_rules:
+        -
+          uuid: 37899d61b3da492a96132a456aba6af7
+          name: 网口自动发现
+          type: SNMP_AGENT
+          snmp_oid: 'discovery[{#IFOPERSTATUS},1.3.6.1.2.1.2.2.1.8,{#IFADMINSTATUS},1.3.6.1.2.1.2.2.1.7,{#IFNAME},1.3.6.1.2.1.31.1.1.1.1,{#IFDESCR},1.3.6.1.2.1.2.2.1.2,{#IFTYPE},1.3.6.1.2.1.2.2.1.3]'
+          key: net.if.discovery
+          delay: 5m
+          filter:
+            evaltype: AND
+            conditions:
+              -
+                macro: '{#IFADMINSTATUS}'
+                value: '{$NET.IFADMINSTATUS.MATCHES}'
+                formulaid: A
+              -
+                macro: '{#IFADMINSTATUS}'
+                value: '{$NET.IFADMINSTATUS.NOT_MATCHES}'
+                operator: NOT_MATCHES_REGEX
+                formulaid: B
+              -
+                macro: '{#IFDESCR}'
+                value: '{$NET.IFDESCR.MATCHES}'
+                formulaid: C
+              -
+                macro: '{#IFDESCR}'
+                value: '{$NET.IFDESCR.NOT_MATCHES}'
+                operator: NOT_MATCHES_REGEX
+                formulaid: D
+              -
+                macro: '{#IFNAME}'
+                value: '{$NET.IFNAME.MATCHES}'
+                formulaid: E
+              -
+                macro: '{#IFNAME}'
+                value: '{$NET.IFNAME.NOT_MATCHES}'
+                operator: NOT_MATCHES_REGEX
+                formulaid: F
+              -
+                macro: '{#IFOPERSTATUS}'
+                value: '{$NET.IFOPERSTATUS.MATCHES}'
+                formulaid: G
+              -
+                macro: '{#IFOPERSTATUS}'
+                value: '{$NET.IFOPERSTATUS.NOT_MATCHES}'
+                operator: NOT_MATCHES_REGEX
+                formulaid: H
+              -
+                macro: '{#IFTYPE}'
+                value: '{$NET.IFTYPE.MATCHES}'
+                formulaid: I
+              -
+                macro: '{#IFTYPE}'
+                value: '{$NET.IFTYPE.NOT_MATCHES}'
+                operator: NOT_MATCHES_REGEX
+                formulaid: J
+          lifetime: 3h
+          description: '.1.3.6.1.4.1.2011.6.128.1.1.2.62  为ont设备网口私有oid段'
+          item_prototypes:
+            -
+              uuid: b383670f58bb4336b0dbe70cce7c2e62
+              name: '网口 {#IFNAME}: 入流量'
+              type: SNMP_AGENT
+              snmp_oid: '1.3.6.1.2.1.31.1.1.1.6.{#SNMPINDEX}'
+              key: 'net.if.in[ifHCInOctets.{#SNMPINDEX}]'
+              history: 7d
+              units: bps
+              preprocessing:
+                -
+                  type: CHANGE_PER_SECOND
+                  parameters:
+                    - ''
+                -
+                  type: MULTIPLIER
+                  parameters:
+                    - '8'
+              tags:
+                -
+                  tag: component
+                  value: component
+                -
+                  tag: interface
+                  value: '{#IFNAME}'
+            -
+              uuid: 80bcf02aadd8430cba600a9001b9b92e
+              name: '网口 {#IFNAME}: 出流量'
+              type: SNMP_AGENT
+              snmp_oid: '1.3.6.1.2.1.31.1.1.1.10.{#SNMPINDEX}'
+              key: 'net.if.out[ifHCOutOctets.{#SNMPINDEX}]'
+              history: 7d
+              units: bps
+              preprocessing:
+                -
+                  type: CHANGE_PER_SECOND
+                  parameters:
+                    - ''
+                -
+                  type: MULTIPLIER
+                  parameters:
+                    - '8'
+              tags:
+                -
+                  tag: component
+                  value: network
+                -
+                  tag: interface
+                  value: '{#IFNAME}'
+            -
+              uuid: 103190f4562741ac800ab146f5de35c9
+              name: '网口 {#IFNAME}: 速率'
+              type: SNMP_AGENT
+              snmp_oid: '1.3.6.1.2.1.31.1.1.1.15.{#SNMPINDEX}'
+              key: 'net.if.speed[ifHighSpeed.{#SNMPINDEX}]'
+              history: 7d
+              units: bps
+              preprocessing:
+                -
+                  type: MULTIPLIER
+                  parameters:
+                    - '1000000'
+                -
+                  type: DISCARD_UNCHANGED_HEARTBEAT
+                  parameters:
+                    - 1h
+              tags:
+                -
+                  tag: component
+                  value: network
+                -
+                  tag: interface
+                  value: '{#IFNAME}'
+            -
+              uuid: 58206699d60d41cead823abda58a9856
+              name: '网口 {#IFNAME}: 状态'
+              type: SNMP_AGENT
+              snmp_oid: '1.3.6.1.2.1.2.2.1.8.{#SNMPINDEX}'
+              key: 'net.if.status[ifOperStatus.{#SNMPINDEX}]'
+              history: 7d
+              valuemap:
+                name: ifOperStatus
+              tags:
+                -
+                  tag: component
+                  value: network
+                -
+                  tag: interface
+                  value: '{#IFNAME}'
+              trigger_prototypes:
+                -
+                  uuid: 2cc3841a715f4d958170797f9f0be28b
+                  expression: '{$NET.IFCONTROL:"{#IFNAME}"}=1 and last(/Huawei OLT/net.if.status[ifOperStatus.{#SNMPINDEX}])=2 and (last(/Huawei OLT/net.if.status[ifOperStatus.{#SNMPINDEX}],#1)<>last(/Huawei OLT/net.if.status[ifOperStatus.{#SNMPINDEX}],#2))'
+                  recovery_mode: RECOVERY_EXPRESSION
+                  recovery_expression: 'last(/Huawei OLT/net.if.status[ifOperStatus.{#SNMPINDEX}])<>2 or {$NET.IFCONTROL:"{#IFNAME}"}=0'
+                  name: '网口 {#IFNAME}: 状态异常'
+                  priority: HIGH
+                  tags:
+                    -
+                      tag: scope
+                      value: availability
+            -
+              uuid: 8ff7a21721e54d16a9b28c247e923a8e
+              name: '网口 {#IFNAME}: 类型'
+              type: SNMP_AGENT
+              snmp_oid: '1.3.6.1.2.1.2.2.1.3.{#SNMPINDEX}'
+              key: 'net.if.type[ifType.{#SNMPINDEX}]'
+              history: 7d
+              valuemap:
+                name: ifType
+              preprocessing:
+                -
+                  type: DISCARD_UNCHANGED_HEARTBEAT
+                  parameters:
+                    - 1h
+              tags:
+                -
+                  tag: component
+                  value: network
+                -
+                  tag: interface
+                  value: '{#IFNAME}'
+          trigger_prototypes:
+            -
+              uuid: 9518adb5f8dd4684867bc6ee1163669e
+              expression: |
+                change(/Huawei OLT/net.if.speed[ifHighSpeed.{#SNMPINDEX}])<0 and last(/Huawei OLT/net.if.speed[ifHighSpeed.{#SNMPINDEX}])>0
+                and (
+                last(/Huawei OLT/net.if.type[ifType.{#SNMPINDEX}])=6 or
+                last(/Huawei OLT/net.if.type[ifType.{#SNMPINDEX}])=7 or
+                last(/Huawei OLT/net.if.type[ifType.{#SNMPINDEX}])=11 or
+                last(/Huawei OLT/net.if.type[ifType.{#SNMPINDEX}])=62 or
+                last(/Huawei OLT/net.if.type[ifType.{#SNMPINDEX}])=69 or
+                last(/Huawei OLT/net.if.type[ifType.{#SNMPINDEX}])=117
+                )
+                and
+                (last(/Huawei OLT/net.if.status[ifOperStatus.{#SNMPINDEX}])<>2)
+              recovery_mode: RECOVERY_EXPRESSION
+              recovery_expression: |
+                (change(/Huawei OLT/net.if.speed[ifHighSpeed.{#SNMPINDEX}])>0 and last(/Huawei OLT/net.if.speed[ifHighSpeed.{#SNMPINDEX}],#2)>0) or
+                (last(/Huawei OLT/net.if.status[ifOperStatus.{#SNMPINDEX}])=2)
+              name: '网口 {#IFNAME}: 处于低速率模式'
+              priority: WARNING
+              dependencies:
+                -
+                  name: '网口 {#IFNAME}: 状态异常'
+                  expression: '{$NET.IFCONTROL:"{#IFNAME}"}=1 and last(/Huawei OLT/net.if.status[ifOperStatus.{#SNMPINDEX}])=2 and (last(/Huawei OLT/net.if.status[ifOperStatus.{#SNMPINDEX}],#1)<>last(/Huawei OLT/net.if.status[ifOperStatus.{#SNMPINDEX}],#2))'
+                  recovery_expression: 'last(/Huawei OLT/net.if.status[ifOperStatus.{#SNMPINDEX}])<>2 or {$NET.IFCONTROL:"{#IFNAME}"}=0'
+              tags:
+                -
+                  tag: scope
+                  value: performance
+            -
+              uuid: 983264d8f1884fcc9a398bcf1e97b39e
+              expression: |
+                (avg(/Huawei OLT/net.if.in[ifHCInOctets.{#SNMPINDEX}],15m)>({$NET.IF.UTIL.CRIT:"{#IFNAME}"}/100)*last(/Huawei OLT/net.if.speed[ifHighSpeed.{#SNMPINDEX}]) or
+                avg(/Huawei OLT/net.if.out[ifHCOutOctets.{#SNMPINDEX}],15m)>({$NET.IF.UTIL.CRIT:"{#IFNAME}"}/100)*last(/Huawei OLT/net.if.speed[ifHighSpeed.{#SNMPINDEX}])) and
+                last(/Huawei OLT/net.if.speed[ifHighSpeed.{#SNMPINDEX}])>0
+              recovery_mode: RECOVERY_EXPRESSION
+              recovery_expression: |
+                avg(/Huawei OLT/net.if.in[ifHCInOctets.{#SNMPINDEX}],15m)<(({$NET.IF.UTIL.CRIT:"{#IFNAME}"}-3)/100)*last(/Huawei OLT/net.if.speed[ifHighSpeed.{#SNMPINDEX}]) and
+                avg(/Huawei OLT/net.if.out[ifHCOutOctets.{#SNMPINDEX}],15m)<(({$NET.IF.UTIL.CRIT:"{#IFNAME}"}-3)/100)*last(/Huawei OLT/net.if.speed[ifHighSpeed.{#SNMPINDEX}])
+              name: '网口 {#IFNAME}: 带宽使用率持续 15 分钟大于 {$NET.IF.UTIL.CRIT:"{#IFNAME}"}%'
+              priority: HIGH
+              dependencies:
+                -
+                  name: '网口 {#IFNAME}: 状态异常'
+                  expression: '{$NET.IFCONTROL:"{#IFNAME}"}=1 and last(/Huawei OLT/net.if.status[ifOperStatus.{#SNMPINDEX}])=2 and (last(/Huawei OLT/net.if.status[ifOperStatus.{#SNMPINDEX}],#1)<>last(/Huawei OLT/net.if.status[ifOperStatus.{#SNMPINDEX}],#2))'
+                  recovery_expression: 'last(/Huawei OLT/net.if.status[ifOperStatus.{#SNMPINDEX}])<>2 or {$NET.IFCONTROL:"{#IFNAME}"}=0'
+              tags:
+                -
+                  tag: scope
+                  value: performance
+          preprocessing:
+            -
+              type: DISCARD_UNCHANGED_HEARTBEAT
+              parameters:
+                - 1h
+        -
+          uuid: 158d8c9a06cf47bd932b092d03949417
+          name: ONT自动发现
+          type: SNMP_AGENT
+          snmp_oid: 'discovery[{#ONTNAME},1.3.6.1.4.1.2011.6.128.1.1.2.43.1.9]'
+          key: ont.discovery
+          delay: 5m
+          lifetime: 3h
+          item_prototypes:
+            -
+              uuid: b8270910cdf74ecf86a5d3fde20f7b53
+              name: 'ONT {#ONTNAME}: 入流量'
+              type: SNMP_AGENT
+              snmp_oid: '1.3.6.1.4.1.2011.6.128.1.1.4.23.1.3.{#SNMPINDEX}'
+              key: 'ont.airport.traffic.in[{#SNMPINDEX}]'
+              history: 7d
+              units: bps
+              preprocessing:
+                -
+                  type: CHANGE_PER_SECOND
+                  parameters:
+                    - ''
+                -
+                  type: MULTIPLIER
+                  parameters:
+                    - '8'
+              tags:
+                -
+                  tag: component
+                  value: ont
+                -
+                  tag: component
+                  value: '{#ONTNAME}'
+            -
+              uuid: 26d568216fb94fa29376936e0edde936
+              name: 'ONT {#ONTNAME}: 出流量'
+              type: SNMP_AGENT
+              snmp_oid: '1.3.6.1.4.1.2011.6.128.1.1.4.23.1.4.{#SNMPINDEX}'
+              key: 'ont.airport.traffic.out[{#SNMPINDEX}]'
+              history: 7d
+              units: bps
+              preprocessing:
+                -
+                  type: CHANGE_PER_SECOND
+                  parameters:
+                    - ''
+                -
+                  type: MULTIPLIER
+                  parameters:
+                    - '8'
+              tags:
+                -
+                  tag: component
+                  value: ont
+                -
+                  tag: component
+                  value: '{#ONTNAME}'
+            -
+              uuid: bd2752709ea34c59bf459b1161fa1ecf
+              name: 'ONT {#ONTNAME}: 配置恢复状态'
+              type: SNMP_AGENT
+              snmp_oid: '1.3.6.1.4.1.2011.6.128.1.1.2.46.1.16.{#SNMPINDEX}'
+              key: 'ont.config.status[{#SNMPINDEX}]'
+              history: 7d
+              value_type: FLOAT
+              description: |
+                This is the ONT configuration resume status. If it is failed(3),
+                the ONT is down and the service is interrupted. If the config status is noresume (4),
+                set the resume policy as resume for the system and re-register the ONT.
+                Options:
+                1. initialization(1)     - Indicates that the ONT configuration resume status is initialization
+                2. normal(2)             - Indicates that the ONT configuration resume status is normal
+                3. failed(3)             - Indicates that the ONT configuration resume status is failed
+                4. noresume(4)           - Indicates that the ONT configuration resume status is not resumed
+                5. config(5)             - Indicates that the ONT configuration resume status is configuration
+                6. invalid(-1)           - Indicates that the query fails or no information is detected
+              valuemap:
+                name: ontconfigstatus
+              preprocessing:
+                -
+                  type: DISCARD_UNCHANGED_HEARTBEAT
+                  parameters:
+                    - 1h
+              tags:
+                -
+                  tag: component
+                  value: ont
+                -
+                  tag: component
+                  value: '{#ONTNAME}'
+            -
+              uuid: db11550a836a4bd7976626b2c13b3fc4
+              name: 'ONT {#ONTNAME}: 光学模块接收光功率'
+              type: SNMP_AGENT
+              snmp_oid: '1.3.6.1.4.1.2011.6.128.1.1.2.51.1.4.{#SNMPINDEX}'
+              key: 'ont.dbmrxpower[{#SNMPINDEX}]'
+              history: 7d
+              value_type: FLOAT
+              units: dbm
+              description: |
+                The receiving power of the optical module, unit 0.01dBm.
+                21474836.47为无数据返回值。
+              preprocessing:
+                -
+                  type: MULTIPLIER
+                  parameters:
+                    - '0.01'
+              tags:
+                -
+                  tag: component
+                  value: ont
+                -
+                  tag: component
+                  value: '{#ONTNAME}'
+              trigger_prototypes:
+                -
+                  uuid: 88ae03f0adf24020a5aac659d50bdd41
+                  expression: '(max(/Huawei OLT/ont.dbmrxpower[{#SNMPINDEX}],#3) <= {$ONTRXPOWER}) and (last(/Huawei OLT/ont.dbmrxpower[{#SNMPINDEX}]) <> 21474836.47)'
+                  name: 'ONT {#ONTNAME}: 光模块接受信号功率处于低功率，低于{$ONTRXPOWER}dbm'
+                  priority: AVERAGE
+            -
+              uuid: 963f4ae443e84710a32551cc499fbb83
+              name: 'ONT {#ONTNAME}: 光学模块发送光功率'
+              type: SNMP_AGENT
+              snmp_oid: '1.3.6.1.4.1.2011.6.128.1.1.2.51.1.3.{#SNMPINDEX}'
+              key: 'ont.dbmtxpower[{#SNMPINDEX}]'
+              history: 7d
+              value_type: FLOAT
+              units: dbm
+              description: |
+                The transmitting power of the optical module, unit 0.01dBm.
+                21474836.47为无数据返回值。
+              preprocessing:
+                -
+                  type: MULTIPLIER
+                  parameters:
+                    - '0.01'
+              tags:
+                -
+                  tag: component
+                  value: ont
+                -
+                  tag: component
+                  value: '{#ONTNAME}'
+              trigger_prototypes:
+                -
+                  uuid: e46f419172b54aefacdad907657b9272
+                  expression: '(change(/Huawei OLT/ont.dbmtxpower[{#SNMPINDEX}]) <= {$ATTENUATIONFACTOR}) and (last(/Huawei OLT/ont.dbmtxpower[{#SNMPINDEX}]) <> 21474836.47)'
+                  name: 'ONT {#ONTNAME}: 光模块信号功率衰减'
+                  priority: HIGH
+                -
+                  uuid: 8cac22b260694a32bc921ae7363681d2
+                  expression: '(max(/Huawei OLT/ont.dbmtxpower[{#SNMPINDEX}],#3) <= {$ONTTXPOWER}) and (last(/Huawei OLT/ont.dbmtxpower[{#SNMPINDEX}]) <> 21474836.47)'
+                  name: 'ONT {#ONTNAME}: 光模块发送信号功率处于低功率，低于{$ONTTXPOWER}dbm'
+                  priority: AVERAGE
+            -
+              uuid: c29632892e1e4957a5ea3891731e2aec
+              name: 'ONT {#ONTNAME}: 光学模块温度'
+              type: SNMP_AGENT
+              snmp_oid: '1.3.6.1.4.1.2011.6.128.1.1.2.51.1.1.{#SNMPINDEX}'
+              key: 'ont.opticalmodule.temp[{#SNMPINDEX}]'
+              history: 7d
+              units: °C
+              description: 2147483647为无数据返回值。
+              valuemap:
+                name: opticalmoduletemp
+              tags:
+                -
+                  tag: component
+                  value: ont
+                -
+                  tag: component
+                  value: '{#ONTNAME}'
+              trigger_prototypes:
+                -
+                  uuid: 81773b0a04c54e7db1d1a1f024757d04
+                  expression: 'last(/Huawei OLT/ont.opticalmodule.temp[{#SNMPINDEX}])>={$SENSOR.TEMP.CRIT} and last(/Huawei OLT/ont.opticalmodule.temp[{#SNMPINDEX}])<100'
+                  name: 'ONT {#ONTNAME}: 光模块温度大于{$SENSOR.TEMP.CRIT}°C'
+                  priority: HIGH
+            -
+              uuid: d86dbe1671214c88a3ac250aa4b8eae1
+              name: 'ONT {#ONTNAME}: 电池状态'
+              type: SNMP_AGENT
+              snmp_oid: '1.3.6.1.4.1.2011.6.128.1.1.2.46.1.27.{#SNMPINDEX}'
+              key: 'ont.power.status[{#SNMPINDEX}]'
+              history: 7d
+              value_type: FLOAT
+              description: |
+                This object indicates the ONT battery status.
+                Options:
+                1. notSupport(0)         - Not support
+                2. charge(1)             - Charge state
+                3. discharge(2)          - Discharge state
+                4. holding(3)            - Holding state
+                5. supportButInvalid(4)  - Provisioned and present but cannot recharge
+                6. unknownStatus(-1)     - Indicates that the query fails or no information is detected
+              valuemap:
+                name: ontpowerstatus
+              preprocessing:
+                -
+                  type: DISCARD_UNCHANGED_HEARTBEAT
+                  parameters:
+                    - 1h
+              tags:
+                -
+                  tag: component
+                  value: ont
+                -
+                  tag: component
+                  value: '{#ONTNAME}'
+            -
+              uuid: a5d7ce5fa64d4e93baa339fa8519b8dd
+              name: 'ONT {#ONTNAME}: SN号'
+              type: SNMP_AGENT
+              snmp_oid: '1.3.6.1.4.1.2011.6.128.1.1.2.46.1.30.{#SNMPINDEX}'
+              key: 'ont.sn[{#SNMPINDEX}]'
+              history: 7d
+              trends: '0'
+              value_type: TEXT
+              preprocessing:
+                -
+                  type: DISCARD_UNCHANGED_HEARTBEAT
+                  parameters:
+                    - 1h
+              tags:
+                -
+                  tag: component
+                  value: ont
+                -
+                  tag: component
+                  value: '{#ONTNAME}'
+            -
+              uuid: 03f0b0b1d4e5460d8c067e271a289651
+              name: 'ONT {#ONTNAME}: 运行状态'
+              type: SNMP_AGENT
+              snmp_oid: '1.3.6.1.4.1.2011.6.128.1.1.2.46.1.15.{#SNMPINDEX}'
+              key: 'ont.status[{#SNMPINDEX}]'
+              history: 7d
+              value_type: FLOAT
+              description: |
+                This object indicates the ONT running status.
+                Options:
+                1. up(1)          - Normal
+                2. down(2)        - Fault
+                3. invalid(-1)    - Indicates that the query fails or no information is detected
+              valuemap:
+                name: ontstatus
+              preprocessing:
+                -
+                  type: DISCARD_UNCHANGED_HEARTBEAT
+                  parameters:
+                    - 1h
+              tags:
+                -
+                  tag: component
+                  value: ont
+                -
+                  tag: component
+                  value: '{#ONTNAME}'
+              trigger_prototypes:
+                -
+                  uuid: 2c99c3f341d046b699ec5d23502de9bf
+                  expression: 'last(/Huawei OLT/ont.status[{#SNMPINDEX}],#2)=1 and last(/Huawei OLT/ont.status[{#SNMPINDEX}])<>1'
+                  name: 'ONT {#ONTNAME}: 运行状态异常'
+                  priority: HIGH
+            -
+              uuid: bcf3d5c8c6bc48e183fdf7095331e885
+              name: 'ONT {#ONTNAME}: 类型'
+              type: SNMP_AGENT
+              snmp_oid: '1.3.6.1.4.1.2011.6.128.1.1.2.43.1.17.{#SNMPINDEX}'
+              key: 'ont.type[{#SNMPINDEX}]'
+              history: 7d
+              description: |
+                This object indicates the NNI type of the ONT.
+                Options:
+                1. rate2dot5G1dot25G (1) -Downstream rate 2.5Gbps, upstream rate 1.25Gbps.
+                2. rate10G2dot5G (2)     -Downstream rate 10Gbps, upstream rate 2.5Gbps.
+                3. rate10G10G (3)        -Downstream rate 10Gbps, upstream rate 10Gbps.
+                4. auto(4)               -Indicates the actual ont nni type is automatically selected.
+                5. invalid (-1)          -Indicates the invalid value.
+              valuemap:
+                name: onttype
+              preprocessing:
+                -
+                  type: DISCARD_UNCHANGED_HEARTBEAT
+                  parameters:
+                    - 1h
+              tags:
+                -
+                  tag: component
+                  value: ont
+                -
+                  tag: component
+                  value: '{#ONTNAME}'
+          preprocessing:
+            -
+              type: DISCARD_UNCHANGED_HEARTBEAT
+              parameters:
+                - 1h
+        -
+          uuid: 79245c94d0374d3c872ef32eb2074ffa
+          name: 风扇自动发现
+          type: SNMP_AGENT
+          snmp_oid: 'discovery[{#SNMPVALUE},1.3.6.1.4.1.2011.5.25.31.1.1.10.1.1]'
+          key: sensor.fan.discovery
+          delay: 5m
+          lifetime: 3h
+          item_prototypes:
+            -
+              uuid: fec8a198978f44669f883765c7fa54ae
+              name: '风扇 {#SNMPINDEX}: 转速'
+              type: SNMP_AGENT
+              snmp_oid: '1.3.6.1.4.1.2011.5.25.31.1.1.10.1.5.{#SNMPINDEX}'
+              key: 'sensor.fan.speed[{#SNMPINDEX}]'
+              history: 7d
+              valuemap:
+                name: hwEntityFanState
+              tags:
+                -
+                  tag: component
+                  value: fan
+            -
+              uuid: 544560ae1eed4bbb91328d81da50b780
+              name: '风扇 {#SNMPINDEX}: 状态'
+              type: SNMP_AGENT
+              snmp_oid: '1.3.6.1.4.1.2011.5.25.31.1.1.10.1.7.{#SNMPINDEX}'
+              key: 'sensor.fan.status[{#SNMPINDEX}]'
+              history: 7d
+              valuemap:
+                name: hwEntityFanState
+              tags:
+                -
+                  tag: component
+                  value: fan
+              trigger_prototypes:
+                -
+                  uuid: 671ac3a1e7164da0965a2c7ba84c4448
+                  expression: 'last(/Huawei OLT/sensor.fan.status[{#SNMPINDEX}])<>1'
+                  recovery_mode: RECOVERY_EXPRESSION
+                  recovery_expression: 'last(/Huawei OLT/sensor.fan.status[{#SNMPINDEX}])=1'
+                  name: '风扇 {#SNMPINDEX}: 状态异常'
+                  priority: AVERAGE
+          preprocessing:
+            -
+              type: DISCARD_UNCHANGED_HEARTBEAT
+              parameters:
+                - 1h
+        -
+          uuid: 0c0e5d5db8a44f1fb377d58d7907b99a
+          name: 电源自动发现
+          type: SNMP_AGENT
+          snmp_oid: 'discovery[{#SNMPVALUE},1.3.6.1.4.1.2011.5.25.31.1.1.18.1.1]'
+          key: sensor.psu.discovery
+          delay: 5m
+          lifetime: 3h
+          item_prototypes:
+            -
+              uuid: 0d15c53817344700ab5286bbca751dcf
+              name: '电源 {#SNMPINDEX}: 状态'
+              type: SNMP_AGENT
+              snmp_oid: '1.3.6.1.4.1.2011.5.25.31.1.1.18.1.6.{#SNMPINDEX}'
+              key: 'sensor.psu.status[{#SNMPINDEX}]'
+              history: 7d
+              valuemap:
+                name: hwEntityPwrState
+              trigger_prototypes:
+                -
+                  uuid: 8ac2cb25386148a7ac8a03a6a467d1c9
+                  expression: 'last(/Huawei OLT/sensor.psu.status[{#SNMPINDEX}])<>1'
+                  recovery_mode: RECOVERY_EXPRESSION
+                  recovery_expression: 'last(/Huawei OLT/sensor.psu.status[{#SNMPINDEX}])=1'
+                  name: '电源 {#SNMPINDEX}: 状态异常'
+                  priority: HIGH
+          preprocessing:
+            -
+              type: DISCARD_UNCHANGED_HEARTBEAT
+              parameters:
+                - 1h
+        -
+          uuid: 8c2b1fe8c3bd4ad1972d3955495af232
+          name: 温度自动发现
+          type: SNMP_AGENT
+          snmp_oid: 'discovery[{#SNMPVALUE},1.3.6.1.4.1.2011.5.25.31.1.1.1.1.11,{#PYTYPE},1.3.6.1.2.1.47.1.1.1.1.5]'
+          key: sensor.temp.discovery
+          delay: 5m
+          filter:
+            conditions:
+              -
+                macro: '{#SNMPVALUE}'
+                value: 2147483647|0
+                operator: NOT_MATCHES_REGEX
+                formulaid: B
+              -
+                macro: '{#PYTYPE}'
+                value: '9'
+                formulaid: A
+          lifetime: 3h
+          item_prototypes:
+            -
+              uuid: 50ca371554214ed88856ce0a995c8e15
+              name: '温度 {#SNMPINDEX}: 值'
+              type: SNMP_AGENT
+              snmp_oid: '1.3.6.1.4.1.2011.5.25.31.1.1.1.1.11.{#SNMPINDEX}'
+              key: 'sensor.temp.value[{#SNMPINDEX}]'
+              history: 7d
+              value_type: FLOAT
+              units: °C
+              description: |
+                MIB: HUAWEI-ENTITY-EXTENT-MIB
+                The temperature for the {#SNMPVALUE}.
+              tags:
+                -
+                  tag: component
+                  value: temperature
+              trigger_prototypes:
+                -
+                  uuid: 1a6c532c786e4529b6e4feffec7829e2
+                  expression: 'min(/Huawei OLT/sensor.temp.value[{#SNMPINDEX}],5m)>{$SENSOR.TEMP.CRIT}'
+                  recovery_mode: RECOVERY_EXPRESSION
+                  recovery_expression: 'max(/Huawei OLT/sensor.temp.value[{#SNMPINDEX}],5m)<{$SENSOR.TEMP.CRIT}-3'
+                  name: '温度 {#SNMPINDEX}: 持续 5 分钟高于 {$SENSOR.TEMP.CRIT}°C'
+                  priority: AVERAGE
+          preprocessing:
+            -
+              type: DISCARD_UNCHANGED_HEARTBEAT
+              parameters:
+                - 1h
+        -
+          uuid: e260189497024d1fa773693f00b4f4a1
+          name: 堆叠口自动发现
+          type: SNMP_AGENT
+          snmp_oid: 'discovery[{#STACKNAME},1.3.6.1.4.1.2011.5.25.183.1.21.1.3]'
+          key: stack.if.discovery
+          delay: 5m
+          filter:
+            evaltype: AND
+          lifetime: 3h
+          item_prototypes:
+            -
+              uuid: 66d35d4e445c450b8857972a0bcc653a
+              name: '堆叠口 {#STACKNAME}: 状态'
+              type: SNMP_AGENT
+              snmp_oid: '1.3.6.1.4.1.2011.5.25.183.1.21.1.5.{#SNMPINDEX}'
+              key: 'stack.status[{#SNMPINDEX}]'
+              history: 7d
+              valuemap:
+                name: stack.status
+              trigger_prototypes:
+                -
+                  uuid: 58eec8a6113a48eda5007b3d9bc5ea4a
+                  expression: 'last(/Huawei OLT/stack.status[{#SNMPINDEX}],#2)=1 and last(/Huawei OLT/stack.status[{#SNMPINDEX}])<>1'
+                  name: '堆叠口 {#STACKNAME}: 状态异常'
+                  priority: HIGH
+          preprocessing:
+            -
+              type: DISCARD_UNCHANGED_HEARTBEAT
+              parameters:
+                - 1h
+      tags:
+        -
+          tag: class
+          value: network
+        -
+          tag: type
+          value: switch
+        -
+          tag: vendor
+          value: huawei
+      macros:
+        -
+          macro: '{$ATTENUATIONFACTOR}'
+          value: '-2'
+        -
+          macro: '{$ONTRXPOWER}'
+          value: '-20.89'
+        -
+          macro: '{$ONTTXPOWER}'
+          value: '-0.93'
+      valuemaps:
+        -
+          uuid: 88c591d88a2542b587994571680a3186
+          name: available
+          mappings:
+            -
+              value: '0'
+              newvalue: 'not available'
+            -
+              value: '1'
+              newvalue: available
+            -
+              value: '2'
+              newvalue: unknown
+        -
+          uuid: 0494cabc350544d3ba9df58423bc1f1d
+          name: hwEntityFanState
+          mappings:
+            -
+              value: '1'
+              newvalue: normal
+            -
+              value: '2'
+              newvalue: abnormal
+        -
+          uuid: a56f664c2939416e8a965b90e8c1ccd5
+          name: hwEntityPwrState
+          mappings:
+            -
+              value: '1'
+              newvalue: normal
+            -
+              value: '2'
+              newvalue: notSupply
+            -
+              value: '3'
+              newvalue: sleep
+            -
+              value: '4'
+              newvalue: unkown
+        -
+          uuid: 0099e37858c746cd80ef97feacecc44e
+          name: ifOperStatus
+          mappings:
+            -
+              value: '1'
+              newvalue: up
+            -
+              value: '2'
+              newvalue: down
+            -
+              value: '3'
+              newvalue: testing
+            -
+              value: '4'
+              newvalue: unknown
+            -
+              value: '5'
+              newvalue: dormant
+            -
+              value: '6'
+              newvalue: notPresent
+            -
+              value: '7'
+              newvalue: lowerLayerDown
+        -
+          uuid: d6a25dd81c5e4e9792dfbf5b062ed65c
+          name: ifType
+          mappings:
+            -
+              value: '1'
+              newvalue: other
+            -
+              value: '2'
+              newvalue: regular1822
+            -
+              value: '3'
+              newvalue: hdh1822
+            -
+              value: '4'
+              newvalue: ddnX25
+            -
+              value: '5'
+              newvalue: rfc877x25
+            -
+              value: '6'
+              newvalue: ethernetCsmacd
+            -
+              value: '7'
+              newvalue: iso88023Csmacd
+            -
+              value: '8'
+              newvalue: iso88024TokenBus
+            -
+              value: '9'
+              newvalue: iso88025TokenRing
+            -
+              value: '10'
+              newvalue: iso88026Man
+            -
+              value: '11'
+              newvalue: starLan
+            -
+              value: '12'
+              newvalue: proteon10Mbit
+            -
+              value: '13'
+              newvalue: proteon80Mbit
+            -
+              value: '14'
+              newvalue: hyperchannel
+            -
+              value: '15'
+              newvalue: fddi
+            -
+              value: '16'
+              newvalue: lapb
+            -
+              value: '17'
+              newvalue: sdlc
+            -
+              value: '18'
+              newvalue: ds1
+            -
+              value: '19'
+              newvalue: e1
+            -
+              value: '20'
+              newvalue: basicISDN
+            -
+              value: '21'
+              newvalue: primaryISDN
+            -
+              value: '22'
+              newvalue: propPointToPointSerial
+            -
+              value: '23'
+              newvalue: ppp
+            -
+              value: '24'
+              newvalue: softwareLoopback
+            -
+              value: '25'
+              newvalue: eon
+            -
+              value: '26'
+              newvalue: ethernet3Mbit
+            -
+              value: '27'
+              newvalue: nsip
+            -
+              value: '28'
+              newvalue: slip
+            -
+              value: '29'
+              newvalue: ultra
+            -
+              value: '30'
+              newvalue: ds3
+            -
+              value: '31'
+              newvalue: sip
+            -
+              value: '32'
+              newvalue: frameRelay
+            -
+              value: '33'
+              newvalue: rs232
+            -
+              value: '34'
+              newvalue: para
+            -
+              value: '35'
+              newvalue: arcnet
+            -
+              value: '36'
+              newvalue: arcnetPlus
+            -
+              value: '37'
+              newvalue: atm
+            -
+              value: '38'
+              newvalue: miox25
+            -
+              value: '39'
+              newvalue: sonet
+            -
+              value: '40'
+              newvalue: x25ple
+            -
+              value: '41'
+              newvalue: iso88022llc
+            -
+              value: '42'
+              newvalue: localTalk
+            -
+              value: '43'
+              newvalue: smdsDxi
+            -
+              value: '44'
+              newvalue: frameRelayService
+            -
+              value: '45'
+              newvalue: v35
+            -
+              value: '46'
+              newvalue: hssi
+            -
+              value: '47'
+              newvalue: hippi
+            -
+              value: '48'
+              newvalue: modem
+            -
+              value: '49'
+              newvalue: aal5
+            -
+              value: '50'
+              newvalue: sonetPath
+            -
+              value: '51'
+              newvalue: sonetVT
+            -
+              value: '52'
+              newvalue: smdsIcip
+            -
+              value: '53'
+              newvalue: propVirtual
+            -
+              value: '54'
+              newvalue: propMultiplexor
+            -
+              value: '55'
+              newvalue: ieee80212
+            -
+              value: '56'
+              newvalue: fibreChannel
+            -
+              value: '57'
+              newvalue: hippiInterface
+            -
+              value: '58'
+              newvalue: frameRelayInterconnect
+            -
+              value: '59'
+              newvalue: aflane8023
+            -
+              value: '60'
+              newvalue: aflane8025
+            -
+              value: '61'
+              newvalue: cctEmul
+            -
+              value: '62'
+              newvalue: fastEther
+            -
+              value: '63'
+              newvalue: isdn
+            -
+              value: '64'
+              newvalue: v11
+            -
+              value: '65'
+              newvalue: v36
+            -
+              value: '66'
+              newvalue: g703at64k
+            -
+              value: '67'
+              newvalue: g703at2mb
+            -
+              value: '68'
+              newvalue: qllc
+            -
+              value: '69'
+              newvalue: fastEtherFX
+            -
+              value: '70'
+              newvalue: channel
+            -
+              value: '71'
+              newvalue: ieee80211
+            -
+              value: '72'
+              newvalue: ibm370parChan
+            -
+              value: '73'
+              newvalue: escon
+            -
+              value: '74'
+              newvalue: dlsw
+            -
+              value: '75'
+              newvalue: isdns
+            -
+              value: '76'
+              newvalue: isdnu
+            -
+              value: '77'
+              newvalue: lapd
+            -
+              value: '78'
+              newvalue: ipSwitch
+            -
+              value: '79'
+              newvalue: rsrb
+            -
+              value: '80'
+              newvalue: atmLogical
+            -
+              value: '81'
+              newvalue: ds0
+            -
+              value: '82'
+              newvalue: ds0Bundle
+            -
+              value: '83'
+              newvalue: bsc
+            -
+              value: '84'
+              newvalue: async
+            -
+              value: '85'
+              newvalue: cnr
+            -
+              value: '86'
+              newvalue: iso88025Dtr
+            -
+              value: '87'
+              newvalue: eplrs
+            -
+              value: '88'
+              newvalue: arap
+            -
+              value: '89'
+              newvalue: propCnls
+            -
+              value: '90'
+              newvalue: hostPad
+            -
+              value: '91'
+              newvalue: termPad
+            -
+              value: '92'
+              newvalue: frameRelayMPI
+            -
+              value: '93'
+              newvalue: x213
+            -
+              value: '94'
+              newvalue: adsl
+            -
+              value: '95'
+              newvalue: radsl
+            -
+              value: '96'
+              newvalue: sdsl
+            -
+              value: '97'
+              newvalue: vdsl
+            -
+              value: '98'
+              newvalue: iso88025CRFPInt
+            -
+              value: '99'
+              newvalue: myrinet
+            -
+              value: '100'
+              newvalue: voiceEM
+            -
+              value: '101'
+              newvalue: voiceFXO
+            -
+              value: '102'
+              newvalue: voiceFXS
+            -
+              value: '103'
+              newvalue: voiceEncap
+            -
+              value: '104'
+              newvalue: voiceOverIp
+            -
+              value: '105'
+              newvalue: atmDxi
+            -
+              value: '106'
+              newvalue: atmFuni
+            -
+              value: '107'
+              newvalue: atmIma
+            -
+              value: '108'
+              newvalue: pppMultilinkBundle
+            -
+              value: '109'
+              newvalue: ipOverCdlc
+            -
+              value: '110'
+              newvalue: ipOverClaw
+            -
+              value: '111'
+              newvalue: stackToStack
+            -
+              value: '112'
+              newvalue: virtualIpAddress
+            -
+              value: '113'
+              newvalue: mpc
+            -
+              value: '114'
+              newvalue: ipOverAtm
+            -
+              value: '115'
+              newvalue: iso88025Fiber
+            -
+              value: '116'
+              newvalue: tdlc
+            -
+              value: '117'
+              newvalue: gigabitEthernet
+            -
+              value: '118'
+              newvalue: hdlc
+            -
+              value: '119'
+              newvalue: lapf
+            -
+              value: '120'
+              newvalue: v37
+            -
+              value: '121'
+              newvalue: x25mlp
+            -
+              value: '122'
+              newvalue: x25huntGroup
+            -
+              value: '123'
+              newvalue: trasnpHdlc
+            -
+              value: '124'
+              newvalue: interleave
+            -
+              value: '125'
+              newvalue: fast
+            -
+              value: '126'
+              newvalue: ip
+            -
+              value: '127'
+              newvalue: docsCableMaclayer
+            -
+              value: '128'
+              newvalue: docsCableDownstream
+            -
+              value: '129'
+              newvalue: docsCableUpstream
+            -
+              value: '130'
+              newvalue: a12MppSwitch
+            -
+              value: '131'
+              newvalue: tunnel
+            -
+              value: '132'
+              newvalue: coffee
+            -
+              value: '133'
+              newvalue: ces
+            -
+              value: '134'
+              newvalue: atmSubInterface
+            -
+              value: '135'
+              newvalue: l2vlan
+            -
+              value: '136'
+              newvalue: l3ipvlan
+            -
+              value: '137'
+              newvalue: l3ipxvlan
+            -
+              value: '138'
+              newvalue: digitalPowerline
+            -
+              value: '139'
+              newvalue: mediaMailOverIp
+            -
+              value: '140'
+              newvalue: dtm
+            -
+              value: '141'
+              newvalue: dcn
+            -
+              value: '142'
+              newvalue: ipForward
+            -
+              value: '143'
+              newvalue: msdsl
+            -
+              value: '144'
+              newvalue: ieee1394
+            -
+              value: '145'
+              newvalue: if-gsn
+            -
+              value: '146'
+              newvalue: dvbRccMacLayer
+            -
+              value: '147'
+              newvalue: dvbRccDownstream
+            -
+              value: '148'
+              newvalue: dvbRccUpstream
+            -
+              value: '149'
+              newvalue: atmVirtual
+            -
+              value: '150'
+              newvalue: mplsTunnel
+            -
+              value: '151'
+              newvalue: srp
+            -
+              value: '152'
+              newvalue: voiceOverAtm
+            -
+              value: '153'
+              newvalue: voiceOverFrameRelay
+            -
+              value: '154'
+              newvalue: idsl
+            -
+              value: '155'
+              newvalue: compositeLink
+            -
+              value: '156'
+              newvalue: ss7SigLink
+            -
+              value: '157'
+              newvalue: propWirelessP2P
+            -
+              value: '158'
+              newvalue: frForward
+            -
+              value: '159'
+              newvalue: rfc1483
+            -
+              value: '160'
+              newvalue: usb
+            -
+              value: '161'
+              newvalue: ieee8023adLag
+            -
+              value: '162'
+              newvalue: bgppolicyaccounting
+            -
+              value: '163'
+              newvalue: frf16MfrBundle
+            -
+              value: '164'
+              newvalue: h323Gatekeeper
+            -
+              value: '165'
+              newvalue: h323Proxy
+            -
+              value: '166'
+              newvalue: mpls
+            -
+              value: '167'
+              newvalue: mfSigLink
+            -
+              value: '168'
+              newvalue: hdsl2
+            -
+              value: '169'
+              newvalue: shdsl
+            -
+              value: '170'
+              newvalue: ds1FDL
+            -
+              value: '171'
+              newvalue: pos
+            -
+              value: '172'
+              newvalue: dvbAsiIn
+            -
+              value: '173'
+              newvalue: dvbAsiOut
+            -
+              value: '174'
+              newvalue: plc
+            -
+              value: '175'
+              newvalue: nfas
+            -
+              value: '176'
+              newvalue: tr008
+            -
+              value: '177'
+              newvalue: gr303RDT
+            -
+              value: '178'
+              newvalue: gr303IDT
+            -
+              value: '179'
+              newvalue: isup
+            -
+              value: '180'
+              newvalue: propDocsWirelessMaclayer
+            -
+              value: '181'
+              newvalue: propDocsWirelessDownstream
+            -
+              value: '182'
+              newvalue: propDocsWirelessUpstream
+            -
+              value: '183'
+              newvalue: hiperlan2
+            -
+              value: '184'
+              newvalue: propBWAp2Mp
+            -
+              value: '185'
+              newvalue: sonetOverheadChannel
+            -
+              value: '186'
+              newvalue: digitalWrapperOverheadChannel
+            -
+              value: '187'
+              newvalue: aal2
+            -
+              value: '188'
+              newvalue: radioMAC
+            -
+              value: '189'
+              newvalue: atmRadio
+            -
+              value: '190'
+              newvalue: imt
+            -
+              value: '191'
+              newvalue: mvl
+            -
+              value: '192'
+              newvalue: reachDSL
+            -
+              value: '193'
+              newvalue: frDlciEndPt
+            -
+              value: '194'
+              newvalue: atmVciEndPt
+            -
+              value: '195'
+              newvalue: opticalChannel
+            -
+              value: '196'
+              newvalue: opticalTransport
+            -
+              value: '197'
+              newvalue: propAtm
+            -
+              value: '198'
+              newvalue: voiceOverCable
+            -
+              value: '199'
+              newvalue: infiniband
+            -
+              value: '200'
+              newvalue: teLink
+            -
+              value: '201'
+              newvalue: q2931
+            -
+              value: '202'
+              newvalue: virtualTg
+            -
+              value: '203'
+              newvalue: sipTg
+            -
+              value: '204'
+              newvalue: sipSig
+            -
+              value: '205'
+              newvalue: docsCableUpstreamChannel
+            -
+              value: '206'
+              newvalue: econet
+            -
+              value: '207'
+              newvalue: pon155
+            -
+              value: '208'
+              newvalue: pon622
+            -
+              value: '209'
+              newvalue: bridge
+            -
+              value: '210'
+              newvalue: linegroup
+            -
+              value: '211'
+              newvalue: voiceEMFGD
+            -
+              value: '212'
+              newvalue: voiceFGDEANA
+            -
+              value: '213'
+              newvalue: voiceDID
+            -
+              value: '214'
+              newvalue: mpegTransport
+            -
+              value: '215'
+              newvalue: sixToFour
+            -
+              value: '216'
+              newvalue: gtp
+            -
+              value: '217'
+              newvalue: pdnEtherLoop1
+            -
+              value: '218'
+              newvalue: pdnEtherLoop2
+            -
+              value: '219'
+              newvalue: opticalChannelGroup
+            -
+              value: '220'
+              newvalue: homepna
+            -
+              value: '221'
+              newvalue: gfp
+            -
+              value: '222'
+              newvalue: ciscoISLvlan
+            -
+              value: '223'
+              newvalue: actelisMetaLOOP
+            -
+              value: '224'
+              newvalue: fcipLink
+            -
+              value: '225'
+              newvalue: rpr
+            -
+              value: '226'
+              newvalue: qam
+            -
+              value: '227'
+              newvalue: lmp
+            -
+              value: '228'
+              newvalue: cblVectaStar
+            -
+              value: '229'
+              newvalue: docsCableMCmtsDownstream
+            -
+              value: '230'
+              newvalue: adsl2
+            -
+              value: '231'
+              newvalue: macSecControlledIF
+            -
+              value: '232'
+              newvalue: macSecUncontrolledIF
+            -
+              value: '233'
+              newvalue: aviciOpticalEther
+            -
+              value: '234'
+              newvalue: atmbond
+            -
+              value: '235'
+              newvalue: voiceFGDOS
+            -
+              value: '236'
+              newvalue: mocaVersion1
+            -
+              value: '237'
+              newvalue: ieee80216WMAN
+            -
+              value: '238'
+              newvalue: adsl2plus
+            -
+              value: '239'
+              newvalue: dvbRcsMacLayer
+            -
+              value: '240'
+              newvalue: dvbTdm
+            -
+              value: '241'
+              newvalue: dvbRcsTdma
+            -
+              value: '242'
+              newvalue: x86Laps
+            -
+              value: '243'
+              newvalue: wwanPP
+            -
+              value: '244'
+              newvalue: wwanPP2
+            -
+              value: '245'
+              newvalue: voiceEBS
+            -
+              value: '246'
+              newvalue: ifPwType
+            -
+              value: '247'
+              newvalue: ilan
+            -
+              value: '248'
+              newvalue: pip
+            -
+              value: '249'
+              newvalue: aluELP
+            -
+              value: '250'
+              newvalue: gpon
+            -
+              value: '251'
+              newvalue: vdsl2
+            -
+              value: '252'
+              newvalue: capwapDot11Profile
+            -
+              value: '253'
+              newvalue: capwapDot11Bss
+            -
+              value: '254'
+              newvalue: capwapWtpVirtualRadio
+            -
+              value: '255'
+              newvalue: bits
+            -
+              value: '256'
+              newvalue: docsCableUpstreamRfPort
+            -
+              value: '257'
+              newvalue: cableDownstreamRfPort
+            -
+              value: '258'
+              newvalue: vmwareVirtualNic
+            -
+              value: '259'
+              newvalue: ieee802154
+            -
+              value: '260'
+              newvalue: otnOdu
+            -
+              value: '261'
+              newvalue: otnOtu
+            -
+              value: '262'
+              newvalue: ifVfiType
+            -
+              value: '263'
+              newvalue: g9981
+            -
+              value: '264'
+              newvalue: g9982
+            -
+              value: '265'
+              newvalue: g9983
+            -
+              value: '266'
+              newvalue: aluEpon
+            -
+              value: '267'
+              newvalue: aluEponOnu
+            -
+              value: '268'
+              newvalue: aluEponPhysicalUni
+            -
+              value: '269'
+              newvalue: aluEponLogicalLink
+            -
+              value: '270'
+              newvalue: aluGponOnu
+            -
+              value: '271'
+              newvalue: aluGponPhysicalUni
+            -
+              value: '272'
+              newvalue: vmwareNicTeam
+            -
+              value: '277'
+              newvalue: docsOfdmDownstream
+            -
+              value: '278'
+              newvalue: docsOfdmaUpstream
+            -
+              value: '279'
+              newvalue: gfast
+            -
+              value: '280'
+              newvalue: sdci
+            -
+              value: '281'
+              newvalue: xboxWireless
+            -
+              value: '282'
+              newvalue: fastdsl
+            -
+              value: '283'
+              newvalue: docsCableScte55d1FwdOob
+            -
+              value: '284'
+              newvalue: docsCableScte55d1RetOob
+            -
+              value: '285'
+              newvalue: docsCableScte55d2DsOob
+            -
+              value: '286'
+              newvalue: docsCableScte55d2UsOob
+            -
+              value: '287'
+              newvalue: docsCableNdf
+            -
+              value: '288'
+              newvalue: docsCableNdr
+            -
+              value: '289'
+              newvalue: ptm
+            -
+              value: '290'
+              newvalue: ghn
+        -
+          uuid: 2d71fc53cf2246c79ba18569a0cf77b6
+          name: ontconfigstatus
+          mappings:
+            -
+              value: '1'
+              newvalue: initialization
+            -
+              value: '2'
+              newvalue: normal
+            -
+              value: '3'
+              newvalue: failed
+            -
+              value: '4'
+              newvalue: noresume
+            -
+              value: '5'
+              newvalue: config
+            -
+              value: '-1'
+              newvalue: invalid
+        -
+          uuid: 25de5289c9dc4891a919271b52e7cd7a
+          name: ontpowerstatus
+          mappings:
+            -
+              value: '0'
+              newvalue: notSupport
+            -
+              value: '1'
+              newvalue: charge
+            -
+              value: '2'
+              newvalue: discharge
+            -
+              value: '3'
+              newvalue: holding
+            -
+              value: '4'
+              newvalue: supportButInvalid
+            -
+              value: '-1'
+              newvalue: unknownStatus
+        -
+          uuid: c540eca1795f442fa852e377549dce85
+          name: ontstatus
+          mappings:
+            -
+              value: '1'
+              newvalue: up
+            -
+              value: '2'
+              newvalue: down
+            -
+              value: '-1'
+              newvalue: invaild
+        -
+          uuid: 3cbca7ecdc1e4ff4a3c3dc287b599fbb
+          name: onttype
+          mappings:
+            -
+              value: '1'
+              newvalue: rate2dot5G1dot25G
+            -
+              value: '2'
+              newvalue: rate10G2dot5G
+            -
+              value: '3'
+              newvalue: rate10G10G
+            -
+              value: '4'
+              newvalue: auto
+            -
+              value: '-1'
+              newvalue: invalid
+        -
+          uuid: df0d59d40af649749735b6b3ce7b6244
+          name: opticalmoduletemp
+          mappings:
+            -
+              value: '2147483647'
+              newvalue: 无数据
+        -
+          uuid: 5299de82fdcb418ca8784dec6f1281c7
+          name: stack.status
+          mappings:
+            -
+              value: '1'
+              newvalue: up
+            -
+              value: '2'
+              newvalue: down
+        -
+          uuid: c1a8c918e6144631bec5416b772b58bd
+          name: state
+          mappings:
+            -
+              value: '0'
+              newvalue: down
+            -
+              value: '1'
+              newvalue: up
